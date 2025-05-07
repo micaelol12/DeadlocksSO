@@ -20,21 +20,39 @@ class DeadlockSimulator:
         # Botões
         button_frame = tk.Frame(root)
         button_frame.pack()
-        tk.Button(button_frame, text="Novo Processo", command=self.enter_create_process_mode).pack(side=tk.LEFT)
-        self.add_process_button = tk.Button(button_frame, text="Novo Recurso", command=self.enter_create_resource_mode).pack(side=tk.LEFT)
+        self.add_process_button = tk.Button(button_frame, text="Novo Processo", command=self.enter_create_process_mode)
+        self.add_resource_button = tk.Button(button_frame, text="Novo Recurso", command=self.enter_create_resource_mode)
+
+        self.add_resource_button.pack(side=tk.LEFT)
+        self.add_process_button.pack(side=tk.LEFT)
         tk.Button(button_frame, text="Detectar Deadlock", command=self.detect_deadlock).pack(side=tk.LEFT)
+        tk.Button(button_frame, text="Limpar", command=self.limpar_quadro).pack(side=tk.LEFT)
 
         self.canvas.bind("<Button-1>", self.on_canvas_click)
+    
+    def limpar_quadro(self):
+        self.canvas.delete("all")
+        self.graph.clear()
+        self.nodes.clear()
+        self.node_positions.clear()
+        self.node_count = {'P': 0, 'R': 0}
+        self.selected_node = None
 
     def enter_create_process_mode(self):
-        self.create_process = True
-        self.create_resource = False
-        # aqui seria legal colorir o botão
-    
+        self.ativar_desativar_botao_processo(not self.create_process)
+        self.ativar_desativar_botao_resource(False)
+
     def enter_create_resource_mode(self):
-        self.create_process = False
-        self.create_resource = True
-         # aqui seria legal colorir o botão
+        self.ativar_desativar_botao_resource(not self.create_resource)
+        self.ativar_desativar_botao_processo(False)
+
+    def ativar_desativar_botao_processo(self,active):
+        self.create_process = active
+        self.add_process_button.config(bg='red' if active else 'SystemButtonFace')
+    
+    def ativar_desativar_botao_resource(self,active):
+        self.create_resource = active
+        self.add_resource_button.config(bg='red' if active else 'SystemButtonFace')
 
     def add_process(self,x,y):
         self.node_count['P'] += 1
