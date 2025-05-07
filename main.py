@@ -38,6 +38,7 @@ class DeadlockSimulator:
         self.canvas.delete("all")
         self.graph.clear()
         self.nodes.clear()
+        self.edges.clear()
         self.node_count = {'P': 0, 'R': 0, 'E': 0}
         self.selected_node = None
 
@@ -73,31 +74,35 @@ class DeadlockSimulator:
         id = f"R{self.node_count['R']}"
         self.create_node(name,id,"orange",x,y,ETipoNode.RECURSO)
 
+    def add_edge(self,origem:Node,destino:Node):
+        self.node_count['E'] += 1
+        id = f"E{self.node_count['E']}"
+        self.graph.add_edge(origem.id, destino.id)
+
+        edge = Edge(id,origem,destino,self.canvas)
+
+        origem.add_edge(edge)
+        destino.add_edge(edge)
+
+        self.edges[id] = edge
+        edge.print_edge()
+
     def create_node(self, name, id , color, x, y,tipo: ETipoNode):
         tag = f"node_{id}"
 
         node = Node(x,y,id,name,self.canvas,color,tag,tipo)
 
-        node.printNode()
+        node.print_node()
         self.nodes[id] = node
         self.graph.add_node(id)
 
         self.canvas.tag_bind(tag, "<Button-1>", lambda event, n=node: self.on_node_click(n))
         self.canvas.tag_bind(tag, "<Button-3>", lambda event, n=node: self.delete_node(n))
 
-    def deleteNodeEdges(self,node):
-        for key in list(self.edges):
-            edge = self.edges[key]
-            if edge.origem == node or edge.destino == node:
-                edge.delete()
-                del self.edges[key]
-
     def delete_node(self, node:Node):
-
         if node.id in self.nodes:
             node.delete()
             self.graph.remove_node(node.id)
-            self.deleteNodeEdges(node)
 
             del self.nodes[node.id]
 
@@ -105,22 +110,13 @@ class DeadlockSimulator:
                 self.selected_node = None
 
 
-    def create_edge(self,origem:Node,destino:Node):
-        self.node_count['E'] += 1
-        id = f"E{self.node_count['E']}"
-        self.graph.add_edge(origem.id, destino.id)
-
-        edge = Edge(id,origem,destino,self.canvas)
-        self.edges[id] = edge
-        edge.printEdge()
-
     def on_node_click(self, node:Node):
         if self.selected_node:
             isDiferenteNode =  self.selected_node != node
             iDiferenteNodeType = self.selected_node.tipoNode != node.tipoNode
 
             if isDiferenteNode and iDiferenteNodeType:
-                  self.create_edge(self.selected_node,node)
+                  self.add_edge(self.selected_node,node)
 
             self.selected_node.unhighlight_node()
             self.selected_node = None
@@ -130,24 +126,17 @@ class DeadlockSimulator:
             self.exit_create_mode()
 
     def on_canvas_click(self, event):
-        clicked_node = self.get_node_at_position(event.x, event.y)
-
-        if clicked_node:
+        if self.has_node_at_position(event.x, event.y):
             return
         
         if self.create_process:
             self.add_process(event.x,event.y)
-            return
         
         if self.create_resource:
             self.add_resource(event.x,event.y)
-            return
 
-    def get_node_at_position(self, x, y) -> Node:
-        for _, node in self.nodes.items():
-            if node.isInPosition(x,y):
-                return node
-        return None
+    def has_node_at_position(self, x, y) -> bool:
+        return any(node.is_in_position(x, y) for node in self.nodes.values())
 
     def detect_deadlock(self):
         cycles = list(nx.simple_cycles(self.graph))
