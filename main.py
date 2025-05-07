@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import simpledialog, messagebox
 import networkx as nx
+from Node import Node 
 
 class DeadlockSimulator:
     def __init__(self, root):
@@ -10,10 +11,9 @@ class DeadlockSimulator:
         self.canvas.pack()
 
         self.graph = nx.DiGraph()
-        self.nodes = {}
-        self.node_positions = {}
+        self.nodes: dict[str,Node] = {}
         self.node_count = {'P': 0, 'R': 0}
-        self.selected_node = None
+        self.selected_node:Node = None
         self.create_process = False
         self.create_resource = False
 
@@ -34,9 +34,12 @@ class DeadlockSimulator:
         self.canvas.delete("all")
         self.graph.clear()
         self.nodes.clear()
-        self.node_positions.clear()
         self.node_count = {'P': 0, 'R': 0}
         self.selected_node = None
+
+    def exit_create_mode(self):
+        self.ativar_desativar_botao_resource(False)
+        self.ativar_desativar_botao_processo(False)
 
     def enter_create_process_mode(self):
         self.ativar_desativar_botao_processo(not self.create_process)
@@ -56,54 +59,72 @@ class DeadlockSimulator:
 
     def add_process(self,x,y):
         self.node_count['P'] += 1
-        name = f"P{self.node_count['P']}"
-        self.create_node(name, "blue",x,y)
+        name = f"Processo {self.node_count['P']}"
+        id = f"P{self.node_count['P']}"
+        self.create_node(name,id, "blue",x,y)
 
     def add_resource(self,x,y):
         self.node_count['R'] += 1
-        name = f"R{self.node_count['R']}"
-        self.create_node(name, "orange",x,y)
+        name = f"Recurso {self.node_count['R']}"
+        id = f"R{self.node_count['R']}"
+        self.create_node(name,id,"orange",x,y)
 
-    def create_node(self, name, color,x,y):
-        r = 20
-        oval = self.canvas.create_oval(x - r, y - r, x + r, y + r, fill=color)
-        text = self.canvas.create_text(x, y, text=name, fill="white")
-        self.nodes[name] = (oval, text)
-        self.node_positions[name] = (x, y)
-        self.graph.add_node(name)
+    def create_node(self, name, id , color, x, y):
+        tag = f"node_{id}"
+
+        node = Node(x,y,id,name,self.canvas,color,tag)
+
+        node.printNode()
+        self.nodes[id] = node
+        self.graph.add_node(id)
+
+        self.canvas.tag_bind(tag, "<Button-1>", lambda event, n=node: self.on_node_click(n))
+        self.canvas.tag_bind(tag, "<Button-3>", lambda event, n=node: self.delete_node(n))
+
+    def delete_node(self, node:Node):
+        if node.id in self.nodes:
+            node.delete()
+            self.graph.remove_node(node.id)
+            del self.nodes[node]
+
+            if self.selected_node == node:
+                self.selected_node = None
+
+    def on_node_click(self, node:Node):
+        if self.selected_node:
+
+            if self.selected_node != node:
+                self.graph.add_edge(self.selected_node.id, node.id)
+                x1, y1 = self.selected_node.position
+                x2, y2 = node.position
+                self.canvas.create_line(x1, y1, x2, y2, arrow=tk.LAST)
+
+            self.selected_node.unhighlight_node()
+            self.selected_node = None
+        else:
+            node.highlight_node()
+            self.selected_node = node
+            self.exit_create_mode()
 
     def on_canvas_click(self, event):
-        clicked = self.get_node_at_position(event.x, event.y)
+        clicked_node = self.get_node_at_position(event.x, event.y)
 
-        if clicked:
-            if self.selected_node:
-                if self.selected_node != clicked:
-                    self.graph.add_edge(self.selected_node, clicked)
-                    x1, y1 = self.node_positions[self.selected_node]
-                    x2, y2 = self.node_positions[clicked]
-                    self.canvas.create_line(x1, y1, x2, y2, arrow=tk.LAST)
-                    self.selected_node = None
-            else:
-                self.selected_node = clicked
-                self.highlight_node(clicked)
-        else:
-            if self.create_process:
-                self.add_process(event.x,event.y)
-            if self.create_resource:
-                self.add_resource(event.x,event.y)
+        if clicked_node:
+            return
+        
+        if self.create_process:
+            self.add_process(event.x,event.y)
+            return
+        
+        if self.create_resource:
+            self.add_resource(event.x,event.y)
+            return
 
-    def get_node_at_position(self, x, y):
-        for name, (nx, ny) in self.node_positions.items():
-            if abs(x - nx) <= 20 and abs(y - ny) <= 20:
-                return name
+    def get_node_at_position(self, x, y) -> Node:
+        for _, node in self.nodes.items():
+            if node.isInPosition(x,y):
+                return node
         return None
-
-    def highlight_node(self, name):
-        for n, (oval, _) in self.nodes.items():
-            color = "blue" if n.startswith("P") else "orange"
-            self.canvas.itemconfig(oval, outline="black", width=1)
-            if n == name:
-                self.canvas.itemconfig(oval, outline="red", width=2)
 
     def detect_deadlock(self):
         cycles = list(nx.simple_cycles(self.graph))
