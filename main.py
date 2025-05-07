@@ -1,7 +1,10 @@
 import tkinter as tk
 from tkinter import simpledialog, messagebox
 import networkx as nx
-from Node import Node 
+from Node import Node
+from Edge import Edge
+from TipoNode import ETipoNode
+
 
 class DeadlockSimulator:
     def __init__(self, root):
@@ -12,7 +15,8 @@ class DeadlockSimulator:
 
         self.graph = nx.DiGraph()
         self.nodes: dict[str,Node] = {}
-        self.node_count = {'P': 0, 'R': 0}
+        self.edges: dict[str,Node] = {}
+        self.node_count = {'P': 0, 'R': 0, 'E': 0}
         self.selected_node:Node = None
         self.create_process = False
         self.create_resource = False
@@ -34,7 +38,7 @@ class DeadlockSimulator:
         self.canvas.delete("all")
         self.graph.clear()
         self.nodes.clear()
-        self.node_count = {'P': 0, 'R': 0}
+        self.node_count = {'P': 0, 'R': 0, 'E': 0}
         self.selected_node = None
 
     def exit_create_mode(self):
@@ -61,18 +65,18 @@ class DeadlockSimulator:
         self.node_count['P'] += 1
         name = f"Processo {self.node_count['P']}"
         id = f"P{self.node_count['P']}"
-        self.create_node(name,id, "blue",x,y)
+        self.create_node(name,id, "blue",x,y,ETipoNode.PROCESSO)
 
     def add_resource(self,x,y):
         self.node_count['R'] += 1
         name = f"Recurso {self.node_count['R']}"
         id = f"R{self.node_count['R']}"
-        self.create_node(name,id,"orange",x,y)
+        self.create_node(name,id,"orange",x,y,ETipoNode.RECURSO)
 
-    def create_node(self, name, id , color, x, y):
+    def create_node(self, name, id , color, x, y,tipo: ETipoNode):
         tag = f"node_{id}"
 
-        node = Node(x,y,id,name,self.canvas,color,tag)
+        node = Node(x,y,id,name,self.canvas,color,tag,tipo)
 
         node.printNode()
         self.nodes[id] = node
@@ -90,14 +94,21 @@ class DeadlockSimulator:
             if self.selected_node == node:
                 self.selected_node = None
 
+    def create_edge(self,origem:Node,destino:Node):
+        self.node_count['E'] += 1
+        id = f"E{self.node_count['E']}"
+        self.graph.add_edge(origem.id, destino.id)
+        edge = Edge(id,origem,destino,self.canvas)
+        self.edges[id] = edge
+        edge.printEdge()
+
     def on_node_click(self, node:Node):
         if self.selected_node:
+            isDiferenteNode =  self.selected_node != node
+            iDiferenteNodeType = self.selected_node.tipoNode != node.tipoNode
 
-            if self.selected_node != node:
-                self.graph.add_edge(self.selected_node.id, node.id)
-                x1, y1 = self.selected_node.position
-                x2, y2 = node.position
-                self.canvas.create_line(x1, y1, x2, y2, arrow=tk.LAST)
+            if isDiferenteNode and iDiferenteNodeType:
+                  self.create_edge(self.selected_node,node)
 
             self.selected_node.unhighlight_node()
             self.selected_node = None
