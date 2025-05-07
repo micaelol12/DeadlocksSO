@@ -25,5 +25,5 @@ class Edge:
     def print_edge(self):
         x1, y1 = self.origem.position
         x2, y2 = self.destino.position
-        color = 'red' if self.tipo == ETipoEdge.ALOCADO else 'blue'
+        color = 'red' if self.tipo == ETipoEdge.ALOCADO else 'green'
         self.edgeElementId = self.canvas.create_line(x1, y1, x2, y2, arrow=tk.LAST, width=2, fill=color)
