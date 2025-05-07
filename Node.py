@@ -1,5 +1,5 @@
 import tkinter as tk
-from TipoNode import ETipoNode
+from Enums import ETipoNode
 
 class Node:
     def __init__(self,x:int,y:int,id:str,text:str,canvas:tk.Canvas,color:str,tag:str,tipoNode:ETipoNode):

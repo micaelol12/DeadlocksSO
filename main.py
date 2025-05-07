@@ -3,7 +3,7 @@ from tkinter import simpledialog, messagebox
 import networkx as nx
 from Node import Node
 from Edge import Edge
-from TipoNode import ETipoNode
+from Enums import ETipoNode
 
 
 class DeadlockSimulator:
@@ -15,7 +15,7 @@ class DeadlockSimulator:
 
         self.graph = nx.DiGraph()
         self.nodes: dict[str,Node] = {}
-        self.edges: dict[str,Node] = {}
+        self.edges: dict[str,Edge] = {}
         self.node_count = {'P': 0, 'R': 0, 'E': 0}
         self.selected_node:Node = None
         self.create_process = False
@@ -85,19 +85,31 @@ class DeadlockSimulator:
         self.canvas.tag_bind(tag, "<Button-1>", lambda event, n=node: self.on_node_click(n))
         self.canvas.tag_bind(tag, "<Button-3>", lambda event, n=node: self.delete_node(n))
 
+    def deleteNodeEdges(self,node):
+        for key in list(self.edges):
+            edge = self.edges[key]
+            if edge.origem == node or edge.destino == node:
+                edge.delete()
+                del self.edges[key]
+
     def delete_node(self, node:Node):
+
         if node.id in self.nodes:
             node.delete()
             self.graph.remove_node(node.id)
-            del self.nodes[node]
+            self.deleteNodeEdges(node)
+
+            del self.nodes[node.id]
 
             if self.selected_node == node:
                 self.selected_node = None
+
 
     def create_edge(self,origem:Node,destino:Node):
         self.node_count['E'] += 1
         id = f"E{self.node_count['E']}"
         self.graph.add_edge(origem.id, destino.id)
+
         edge = Edge(id,origem,destino,self.canvas)
         self.edges[id] = edge
         edge.printEdge()
