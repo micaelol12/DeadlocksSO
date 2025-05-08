@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import  messagebox
+from tkinter import  messagebox,simpledialog
 import networkx as nx
 from Node import Node
 from Edge import Edge
@@ -69,10 +69,14 @@ class DeadlockSimulator:
         self.create_node(name,id, "blue",x,y,ETipoNode.PROCESSO)
 
     def add_resource(self,x,y):
-        self.node_count['R'] += 1
-        name = f"Recurso {self.node_count['R']}"
-        id = f"R{self.node_count['R']}"
-        self.create_node(name,id,"orange",x,y,ETipoNode.RECURSO)
+        max_alocations = self.ask_max_alocations()
+
+        if(max_alocations):
+            self.node_count['R'] += 1
+            name = f"Recurso {self.node_count['R']}"
+            id = f"R{self.node_count['R']}"
+            self.create_node(name,id,"orange",x,y,ETipoNode.RECURSO,max_alocations)
+        
 
     def add_edge(self,origem:Node,destino:Node):
         self.node_count['E'] += 1
@@ -89,9 +93,8 @@ class DeadlockSimulator:
 
         self.canvas.tag_bind(id, "<Button-3>", lambda event, e=edge: self.delete_edge(e))
 
-
-    def create_node(self, name, id , color, x, y,tipo: ETipoNode):
-        node = Node(x,y,id,name,self.canvas,color,tipo)
+    def create_node(self, name, id , color, x, y,tipo: ETipoNode,max_edges:int = None):
+        node = Node(x,y,id,name,self.canvas,color,tipo,max_edges)
 
         node.print_node()
         self.nodes[id] = node
@@ -113,23 +116,37 @@ class DeadlockSimulator:
     def delete_edge(self,edge:Edge):
         if edge.id in self.edges:
             edge.delete()
+
+            edge.origem.delete_edge(edge)
+            edge.destino.delete_edge(edge)
+
             self.graph.remove_edge(edge.origem.id, edge.destino.id)
             del self.edges[edge.id]
 
+    def seleciona_node(self,node:Node):
+        if(not node.can_add_edge()):
+            messagebox.showwarning("Não foi possivel adicionar o processo", f"Numero máximo de alocações é {node.max_edges}")
+            return
+        
+        node.highlight_node()
+        self.selected_node = node
+        self.exit_create_mode()
+    
+    def try_add_edge(self,node:Node):
+        isDiferenteNode =  self.selected_node != node
+        iDiferenteNodeType = self.selected_node.tipoNode != node.tipoNode
+
+        if isDiferenteNode and iDiferenteNodeType:
+                self.add_edge(self.selected_node,node)
+
+        self.selected_node.unhighlight_node()
+        self.selected_node = None
+
     def on_node_click(self, node:Node):
         if self.selected_node:
-            isDiferenteNode =  self.selected_node != node
-            iDiferenteNodeType = self.selected_node.tipoNode != node.tipoNode
-
-            if isDiferenteNode and iDiferenteNodeType:
-                  self.add_edge(self.selected_node,node)
-
-            self.selected_node.unhighlight_node()
-            self.selected_node = None
+            self.try_add_edge(node)
         else:
-            node.highlight_node()
-            self.selected_node = node
-            self.exit_create_mode()
+            self.seleciona_node(node)
 
     def on_canvas_click(self, event):
         if self.has_node_at_position(event.x, event.y):
@@ -150,6 +167,20 @@ class DeadlockSimulator:
             messagebox.showerror("Deadlock Detectado", f"Deadlock entre: {', '.join(cycles[0])}")
         else:
             messagebox.showinfo("Sem Deadlock", "Nenhum deadlock detectado.")
+
+    def validate_input(self,P):
+        if P == "" or P.isdigit(): 
+            return True
+        else:
+            return False
+    
+    def ask_max_alocations(self) -> int:
+        user_input = simpledialog.askstring("Recurso", "Digite o numero máximo de alocações:")
+        
+        if self.validate_input(user_input):
+            return int(user_input)
+        else:
+            return None
 
 # Inicializar
 root = tk.Tk()

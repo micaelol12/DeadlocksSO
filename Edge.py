@@ -18,7 +18,7 @@ class Edge:
         if self.origem.tipoNode == ETipoNode.PROCESSO and self.destino.tipoNode == ETipoNode.RECURSO:
             return ETipoEdge.PEDIDO
         return ETipoEdge.ALOCADO
-
+    
     def delete(self):
         self.canvas.delete(self.edgeElementId)
 
