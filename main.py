@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import simpledialog, messagebox
+from tkinter import  messagebox
 import networkx as nx
 from Node import Node
 from Edge import Edge
@@ -108,7 +108,6 @@ class DeadlockSimulator:
 
             if self.selected_node == node:
                 self.selected_node = None
-
 
     def on_node_click(self, node:Node):
         if self.selected_node:
