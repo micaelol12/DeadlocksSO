@@ -87,17 +87,18 @@ class DeadlockSimulator:
         self.edges[id] = edge
         edge.print_edge()
 
-    def create_node(self, name, id , color, x, y,tipo: ETipoNode):
-        tag = f"node_{id}"
+        self.canvas.tag_bind(id, "<Button-3>", lambda event, e=edge: self.delete_edge(e))
 
-        node = Node(x,y,id,name,self.canvas,color,tag,tipo)
+
+    def create_node(self, name, id , color, x, y,tipo: ETipoNode):
+        node = Node(x,y,id,name,self.canvas,color,tipo)
 
         node.print_node()
         self.nodes[id] = node
         self.graph.add_node(id)
 
-        self.canvas.tag_bind(tag, "<Button-1>", lambda event, n=node: self.on_node_click(n))
-        self.canvas.tag_bind(tag, "<Button-3>", lambda event, n=node: self.delete_node(n))
+        self.canvas.tag_bind(id, "<Button-1>", lambda event, n=node: self.on_node_click(n))
+        self.canvas.tag_bind(id, "<Button-3>", lambda event, n=node: self.delete_node(n))
 
     def delete_node(self, node:Node):
         if node.id in self.nodes:
@@ -108,6 +109,12 @@ class DeadlockSimulator:
 
             if self.selected_node == node:
                 self.selected_node = None
+
+    def delete_edge(self,edge:Edge):
+        if edge.id in self.edges:
+            edge.delete()
+            self.graph.remove_edge(edge.origem.id, edge.destino.id)
+            del self.edges[edge.id]
 
     def on_node_click(self, node:Node):
         if self.selected_node:

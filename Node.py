@@ -3,13 +3,12 @@ from Enums import ETipoNode
 from Edge import Edge
 
 class Node:
-    def __init__(self,x:int,y:int,id:str,text:str,canvas:tk.Canvas,color:str,tag:str,tipoNode:ETipoNode):
+    def __init__(self,x:int,y:int,id:str,text:str,canvas:tk.Canvas,color:str,tipoNode:ETipoNode):
         self.position:tuple[int,int] = (x,y)
         self.id = id
         self.text = text
         self.canvas = canvas
         self.color = color
-        self.tag = tag
         self.NodeId = None
         self.TextId = None
         self.radius = 30
@@ -19,8 +18,8 @@ class Node:
     def print_node(self):
         x,y = self.position
 
-        self.NodeId = self.canvas.create_oval(x - self.radius, y - self.radius, x + self.radius, y + self.radius, fill=self.color, tags=(self.tag))
-        self.TextId = self.canvas.create_text(x, y, text=self.text, fill="white", tags=(self.tag))
+        self.NodeId = self.canvas.create_oval(x - self.radius, y - self.radius, x + self.radius, y + self.radius, fill=self.color, tags=(self.id))
+        self.TextId = self.canvas.create_text(x, y, text=self.text, fill="white", tags=(self.id))
 
     def add_edge(self,edge:Edge):
         self.edges.append(edge)

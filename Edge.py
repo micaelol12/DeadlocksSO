@@ -41,4 +41,5 @@ class Edge:
                                        smooth=True,
                                        arrow=tk.LAST,
                                        fill= color,
-                                       width=2)
+                                       width=2,
+                                       tags=(self.id))
