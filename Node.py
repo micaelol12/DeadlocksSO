@@ -22,12 +22,15 @@ class Node:
         self.NodeId = self.canvas.create_oval(x - self.radius, y - self.radius, x + self.radius, y + self.radius, fill=self.color, tags=(self.id))
         self.TextId = self.canvas.create_text(x, y, text=self.text, fill="white", tags=(self.id))
 
-    def can_add_edge(self) -> bool:
+    def can_add_edge(self,edge:Edge = None) -> bool:
+        if(edge and edge.tipo == ETipoEdge.PEDIDO): 
+            return True
+
         alocados = [e for e in self.edges if e.tipo == ETipoEdge.ALOCADO]
         return self.tipoNode == ETipoNode.PROCESSO or len(alocados) < self.max_edges
 
     def add_edge(self,edge:Edge) -> bool:
-        if self.can_add_edge():
+        if self.can_add_edge(edge):
             self.edges.append(edge)
             return True
         
