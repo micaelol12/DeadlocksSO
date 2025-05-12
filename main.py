@@ -4,7 +4,7 @@ import networkx as nx
 from Node import Node
 from Edge import Edge
 from Enums import ETipoNode
-
+import matplotlib.pyplot as plt
 
 class DeadlockSimulator:
     def __init__(self, root):
@@ -13,7 +13,7 @@ class DeadlockSimulator:
         self.canvas = tk.Canvas(root, bg="white", width=800, height=600)
         self.canvas.pack()
 
-        self.graph = nx.DiGraph()
+        self.graph = nx.MultiDiGraph()
         self.nodes: dict[str,Node] = {}
         self.edges: dict[str,Edge] = {}
         self.node_count = {'P': 0, 'R': 0, 'E': 0}
@@ -31,6 +31,7 @@ class DeadlockSimulator:
         self.add_process_button.pack(side=tk.LEFT)
         tk.Button(button_frame, text="Detectar Deadlock", command=self.detect_deadlock).pack(side=tk.LEFT)
         tk.Button(button_frame, text="Limpar", command=self.limpar_quadro).pack(side=tk.LEFT)
+        tk.Button(button_frame, text="Mostrar Grafo", command=self.show_graph).pack(side=tk.LEFT)
 
         self.canvas.bind("<Button-1>", self.on_canvas_click)
     
@@ -181,6 +182,11 @@ class DeadlockSimulator:
             return int(user_input)
         else:
             return None
+        
+    def show_graph(self):
+        nx.draw(self.graph, with_labels=True, font_weight='bold')
+        plt.title("Grafo")
+        plt.show()
 
 # Inicializar
 root = tk.Tk()
