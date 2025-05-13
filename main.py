@@ -1,10 +1,7 @@
 import tkinter as tk
 from tkinter import  messagebox,simpledialog
-import networkx as nx
+from GraphManager import Graphmanager
 from Node import Node
-from Edge import Edge
-from Enums import ETipoNode
-import matplotlib.pyplot as plt
 
 class DeadlockSimulator:
     def __init__(self, root):
@@ -12,14 +9,10 @@ class DeadlockSimulator:
         self.root.title("Simulador de Deadlock")
         self.canvas = tk.Canvas(root, bg="white", width=800, height=600)
         self.canvas.pack()
-
-        self.graph = nx.MultiDiGraph()
-        self.nodes: dict[str,Node] = {}
-        self.edges: dict[str,Edge] = {}
-        self.node_count = {'P': 0, 'R': 0, 'E': 0}
-        self.selected_node:Node = None
         self.create_process = False
         self.create_resource = False
+
+        self.graphManager = Graphmanager(self.canvas)
 
         # Botões
         button_frame = tk.Frame(root)
@@ -31,17 +24,12 @@ class DeadlockSimulator:
         self.add_process_button.pack(side=tk.LEFT)
         tk.Button(button_frame, text="Detectar Deadlock", command=self.detect_deadlock).pack(side=tk.LEFT)
         tk.Button(button_frame, text="Limpar", command=self.limpar_quadro).pack(side=tk.LEFT)
-        tk.Button(button_frame, text="Mostrar Grafo", command=self.show_graph).pack(side=tk.LEFT)
 
         self.canvas.bind("<Button-1>", self.on_canvas_click)
     
     def limpar_quadro(self):
         self.canvas.delete("all")
-        self.graph.clear()
-        self.nodes.clear()
-        self.edges.clear()
-        self.node_count = {'P': 0, 'R': 0, 'E': 0}
-        self.selected_node = None
+        self.graphManager.clear()
 
     def exit_create_mode(self):
         self.ativar_desativar_botao_resource(False)
@@ -64,93 +52,43 @@ class DeadlockSimulator:
         self.add_resource_button.config(bg='red' if active else 'SystemButtonFace')
 
     def add_process(self,x,y):
-        self.node_count['P'] += 1
-        name = f"Processo {self.node_count['P']}"
-        id = f"P{self.node_count['P']}"
-        self.create_node(name,id, "blue",x,y,ETipoNode.PROCESSO)
+        node = self.graphManager.add_process(x,y)
+
+        self.canvas.tag_bind(node.id, "<Button-1>", lambda event, n=node: self.on_node_click(n))
+        self.canvas.tag_bind(node.id, "<Button-3>", lambda event, n=node: self.graphManager.delete_node(n))
 
     def add_resource(self,x,y):
         max_alocations = self.ask_max_alocations()
+        node = self.graphManager.add_resource(x,y,max_alocations)
 
-        if(max_alocations):
-            self.node_count['R'] += 1
-            name = f"Recurso {self.node_count['R']}"
-            id = f"R{self.node_count['R']}"
-            self.create_node(name,id,"orange",x,y,ETipoNode.RECURSO,max_alocations)
+        if node:
+            self.canvas.tag_bind(node.id, "<Button-1>", lambda event, n=node: self.on_node_click(n))
+            self.canvas.tag_bind(node.id, "<Button-3>", lambda event, n=node: self.graphManager.delete_node(n))
         
 
-    def add_edge(self,origem:Node,destino:Node):
-        self.node_count['E'] += 1
-        id = f"E{self.node_count['E']}"
-        self.graph.add_edge(origem.id, destino.id)
-
-        edge = Edge(id,origem,destino,self.canvas)
-
-        origem.add_edge(edge)
-        destino.add_edge(edge)
-
-        self.edges[id] = edge
-        edge.print_edge()
-
-        self.canvas.tag_bind(id, "<Button-3>", lambda event, e=edge: self.delete_edge(e))
-
-    def create_node(self, name, id , color, x, y,tipo: ETipoNode,max_edges:int = None):
-        node = Node(x,y,id,name,self.canvas,color,tipo,max_edges)
-
-        node.print_node()
-        self.nodes[id] = node
-        self.graph.add_node(id)
-
-        self.canvas.tag_bind(id, "<Button-1>", lambda event, n=node: self.on_node_click(n))
-        self.canvas.tag_bind(id, "<Button-3>", lambda event, n=node: self.delete_node(n))
-
-    def delete_node(self, node:Node):
-        if node.id in self.nodes:
-            node.delete()
-            self.graph.remove_node(node.id)
-
-            del self.nodes[node.id]
-
-            if self.selected_node == node:
-                self.selected_node = None
-
-    def delete_edge(self,edge:Edge):
-        if edge.id in self.edges:
-            edge.delete()
-
-            edge.origem.delete_edge(edge)
-            edge.destino.delete_edge(edge)
-
-            self.graph.remove_edge(edge.origem.id, edge.destino.id)
-            del self.edges[edge.id]
+    def add_edge(self,node:Node):
+        edge = self.graphManager.try_add_edge(node)
+        
+        if edge:
+            edge.print_edge()
+            self.canvas.tag_bind(edge.id, "<Button-3>", lambda event, e=edge: self.graphManager.delete_edge(e))
 
     def seleciona_node(self,node:Node):
         if(not node.can_add_edge()):
             messagebox.showwarning("Não foi possivel adicionar o processo", f"Numero máximo de alocações é {node.max_edges}")
             return
         
-        node.highlight_node()
-        self.selected_node = node
+        self.graphManager.seleciona_node(node)
         self.exit_create_mode()
-    
-    def try_add_edge(self,node:Node):
-        isDiferenteNode =  self.selected_node != node
-        iDiferenteNodeType = self.selected_node.tipoNode != node.tipoNode
-
-        if isDiferenteNode and iDiferenteNodeType:
-                self.add_edge(self.selected_node,node)
-
-        self.selected_node.unhighlight_node()
-        self.selected_node = None
 
     def on_node_click(self, node:Node):
-        if self.selected_node:
-            self.try_add_edge(node)
+        if self.graphManager.selected_node:
+            self.add_edge(node)
         else:
             self.seleciona_node(node)
 
     def on_canvas_click(self, event):
-        if self.has_node_at_position(event.x, event.y):
+        if self.graphManager.has_node_at_position(event.x, event.y):
             return
         
         if self.create_process:
@@ -159,16 +97,10 @@ class DeadlockSimulator:
         if self.create_resource:
             self.add_resource(event.x,event.y)
 
-    def has_node_at_position(self, x, y) -> bool:
-        return any(node.is_in_position(x, y) for node in self.nodes.values())
 
     def detect_deadlock(self):
-        cycles = list(nx.simple_cycles(self.graph))
-        if cycles:
-            messagebox.showerror("Deadlock Detectado", f"Deadlock entre: {', '.join(cycles[0])}")
-        else:
-            messagebox.showinfo("Sem Deadlock", "Nenhum deadlock detectado.")
-
+        return True
+        
     def validate_input(self,P):
         if P == "" or P.isdigit(): 
             return True
@@ -183,10 +115,6 @@ class DeadlockSimulator:
         else:
             return None
         
-    def show_graph(self):
-        nx.draw(self.graph, with_labels=True, font_weight='bold')
-        plt.title("Grafo")
-        plt.show()
 
 # Inicializar
 root = tk.Tk()
