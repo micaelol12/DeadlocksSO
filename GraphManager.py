@@ -83,7 +83,65 @@ class Graphmanager:
         return node
     
     def detect_deadlock_with_terminable_edges(self):
-        return True
+        # Mapear índices
+        processo_ids = list(self.processos.keys())
+        recurso_ids = list(self.recursos.keys())
+
+        index_proc = {pid: i for i, pid in enumerate(processo_ids)}
+        index_recurso = {rid: j for j, rid in enumerate(recurso_ids)}
+
+        process_len = len(processo_ids)
+        recurso_len = len(recurso_ids)
+
+        # Inicializar matrizes
+        allocation = [[0]*recurso_len for _ in range(process_len)]
+        request = [[0]*recurso_len for _ in range(process_len)]
+        available = [0]*recurso_len
+
+        # 1. Preencher a matriz de alocação
+        for edge in self.edges.values():
+            if edge.tipo == ETipoEdge.ALOCACAO:
+                i = index_proc[edge.destino.id]
+                j = index_recurso[edge.origem.id]
+                allocation[i][j] += 1
+            
+            elif edge.tipo == ETipoEdge.REQUISACAO:
+                i = index_proc[edge.origem.id]
+                j = index_recurso[edge.destino.id]
+                request[i][j] += 1
+
+        # 2. Vetor de disponíveis
+        for rid, node in self.recursos.items():
+            j = index_recurso[rid]
+            allocated = sum(allocation[i][j] for i in range(process_len))
+            available[j] = node.max_alocacoes - allocated
+
+        # 3. Algoritmo de detecção de deadlock
+        work = available[:]
+        finish = [False]*process_len
+        liberaveis = []
+
+        while True:
+            progress = False
+            for i in range(process_len):
+                if not finish[i]:
+                    # Verifica se o processo i pode terminar com os recursos disponíveis
+                    if all(request[i][j] <= work[j] for j in range(recurso_len)):
+                        # Processo pode terminar: libera os recursos
+                        for j in range(recurso_len):
+                            work[j] += allocation[i][j]
+                        finish[i] = True
+                        progress = True
+            if not progress:
+                break  # Nenhum processo pôde terminar nesta iteração → parar
+
+        processos_em_deadlock = [
+            processo_ids[i] for i in range(process_len) if not finish[i]
+        ]
+
+        return processos_em_deadlock,liberaveis
+
+        
 
 
 
