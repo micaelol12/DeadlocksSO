@@ -1,5 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
+from Edge import Edge
+from Enums import ETipoEdge
 from GraphManager import Graphmanager as GM
 from Node import Node
 from dialog import ask_max_allocations
@@ -47,37 +49,77 @@ class UIController:
 
         if self.create_process:
             node = self.graphManager.add_process(event.x, event.y)
-            node.print_node()
+            self.print_node(node)
             self.bind_node_events(node)
 
         elif self.create_resource:
             max_allocs = ask_max_allocations()
             if max_allocs is not None:
                 node = self.graphManager.add_resource(event.x, event.y, max_allocs)
-                node.print_node()
+                self.print_node(node)
                 self.bind_node_events(node)
+
+    def print_node(self,node:Node):
+        x,y = node.position
+        node.NodeId = self.canvas.create_oval(x - node.radius, y - node.radius, x + node.radius, y + node.radius, fill=node.color, tags=(node.id))
+        node.TextId = self.canvas.create_text(x, y, text=node.text, fill="white", tags=(node.id))
     
     def bind_node_events(self, node: Node):
         self.canvas.tag_bind(node.id, "<Button-1>", lambda e, n=node: self.on_node_click(n))
-        self.canvas.tag_bind(node.id, "<Button-3>", lambda e, n=node: self.graphManager.delete_node(n))
-    
+        self.canvas.tag_bind(node.id, "<Button-3>", lambda e, n=node: self.delete_node(n))
+
+    def print_edge(self,edge:Edge):
+        color = 'red' if edge.tipo == ETipoEdge.ALOCADO else 'green'
+        ctrl_x,ctrl_y,x1,y1,x2,y2 = edge.get_bezier_arrow()
+
+        element =  self.canvas.create_line(x1, y1, ctrl_x, ctrl_y, x2, y2,
+                                       smooth=True,
+                                       arrow=tk.LAST,
+                                       fill= color,
+                                       width=2,
+                                       tags=(edge.id))
+        edge.edgeElementId = element
+
     def on_node_click(self, node: Node):
         if self.graphManager.selected_node:
             if self.graphManager.can_add_edge(node):
                 edge = self.graphManager.add_edge(node)
-                edge.print_edge()
-                self.canvas.tag_bind(edge.id, "<Button-3>", lambda e, edge=edge: self.graphManager.delete_edge(edge))
+                self.print_edge(edge)
+                self.canvas.tag_bind(edge.id, "<Button-3>", lambda e, edge=edge: self.delete_edge(edge))
+            
+            self.unhighlight_node()
         else:
             if not node.can_add_edge():
                 messagebox.showwarning("Limite atingido", f"Máximo de alocações: {node.max_edges}")
                 return
-            self.graphManager.seleciona_node(node)
+            
+            self.highlight_node(node)
+
             self.create_process = self.create_resource = False
             self.update_button_states()
+
+    def delete_node(self,node:Node):
+        for edge in node.edges.copy():
+            self.delete_edge(edge)
+
+        self.canvas.delete(node.NodeId)
+        self.graphManager.delete_node(node)
+
+    def delete_edge(self,edge:Edge):
+        self.canvas.delete(edge.edgeElementId)
+        self.graphManager.delete_edge(edge)
 
     def clear_canvas(self):
         self.canvas.delete("all")
         self.graphManager.clear()
+
+    def unhighlight_node(self):
+        self.canvas.itemconfig(self.graphManager.selected_node.NodeId,outline="black", width=1)
+        self.graphManager.selected_node = None
+
+    def highlight_node(self,node:Node):
+        self.canvas.itemconfig(node.NodeId, outline="red", width=2)
+        self.graphManager.seleciona_node(node)
 
     def detect_deadlock(self):
         # Aqui você poderá chamar um detector real futuramente

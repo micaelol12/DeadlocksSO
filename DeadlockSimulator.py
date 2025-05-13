@@ -10,5 +10,5 @@ class DeadlockSimulator:
         self.canvas = tk.Canvas(root, bg="white", width=800, height=600)
         self.canvas.pack()
 
-        self.graphManager = Graphmanager(self.canvas)
+        self.graphManager = Graphmanager()
         self.ui = UIController(root, self.canvas, self.graphManager)

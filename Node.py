@@ -1,13 +1,11 @@
-import tkinter as tk
 from Enums import ETipoNode,ETipoEdge
 from Edge import Edge
 
 class Node:
-    def __init__(self,x:int,y:int,id:str,text:str,canvas:tk.Canvas,color:str,tipoNode:ETipoNode,max_edges:int = None):
+    def __init__(self,x:int,y:int,id:str,text:str,color:str,tipoNode:ETipoNode,max_edges:int = None):
         self.position:tuple[int,int] = (x,y)
         self.id = id
         self.text = text
-        self.canvas = canvas
         self.color = color
         self.NodeId = None
         self.TextId = None
@@ -15,12 +13,6 @@ class Node:
         self.tipoNode = tipoNode
         self.edges: list[Edge] = []
         self.max_edges = max_edges
-
-    def print_node(self):
-        x,y = self.position
-
-        self.NodeId = self.canvas.create_oval(x - self.radius, y - self.radius, x + self.radius, y + self.radius, fill=self.color, tags=(self.id))
-        self.TextId = self.canvas.create_text(x, y, text=self.text, fill="white", tags=(self.id))
 
     def can_add_edge(self,edge:Edge = None) -> bool:
         if(edge and edge.tipo == ETipoEdge.PEDIDO): 
@@ -36,20 +28,8 @@ class Node:
         
         return False
 
-    def unhighlight_node(self):
-        self.canvas.itemconfig(self.NodeId, outline="black", width=1)
-
-    def highlight_node(self):
-        self.canvas.itemconfig(self.NodeId, outline="red", width=2)
-
-    def delete(self):
-        self.canvas.delete(self.NodeId)
-        self.canvas.delete(self.TextId)
-        self.delete_all_edges()
-    
     def delete_all_edges(self):
         for edge in self.edges[:]:
-            edge.delete()
             edge.origem.delete_edge(edge)
             edge.destino.delete_edge(edge)
     
