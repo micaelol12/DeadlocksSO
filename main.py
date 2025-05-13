@@ -19,12 +19,11 @@ class DeadlockSimulator:
         button_frame.pack()
         self.add_process_button = tk.Button(button_frame, text="Novo Processo", command=self.enter_create_process_mode)
         self.add_resource_button = tk.Button(button_frame, text="Novo Recurso", command=self.enter_create_resource_mode)
-
         self.add_resource_button.pack(side=tk.LEFT)
         self.add_process_button.pack(side=tk.LEFT)
         tk.Button(button_frame, text="Detectar Deadlock", command=self.detect_deadlock).pack(side=tk.LEFT)
         tk.Button(button_frame, text="Limpar", command=self.limpar_quadro).pack(side=tk.LEFT)
-
+        
         self.canvas.bind("<Button-1>", self.on_canvas_click)
     
     def limpar_quadro(self):
@@ -53,23 +52,23 @@ class DeadlockSimulator:
 
     def add_process(self,x,y):
         node = self.graphManager.add_process(x,y)
+        node.print_node()
 
         self.canvas.tag_bind(node.id, "<Button-1>", lambda event, n=node: self.on_node_click(n))
         self.canvas.tag_bind(node.id, "<Button-3>", lambda event, n=node: self.graphManager.delete_node(n))
 
     def add_resource(self,x,y):
         max_alocations = self.ask_max_alocations()
-        node = self.graphManager.add_resource(x,y,max_alocations)
 
-        if node:
+        if max_alocations:
+            node = self.graphManager.add_resource(x,y,max_alocations)
+            node.print_node()
             self.canvas.tag_bind(node.id, "<Button-1>", lambda event, n=node: self.on_node_click(n))
             self.canvas.tag_bind(node.id, "<Button-3>", lambda event, n=node: self.graphManager.delete_node(n))
         
-
     def add_edge(self,node:Node):
-        edge = self.graphManager.try_add_edge(node)
-
-        if edge:
+        if self.graphManager.can_add_edge(node):
+            edge = self.graphManager.add_edge(node)
             edge.print_edge()
             self.canvas.tag_bind(edge.id, "<Button-3>", lambda event, e=edge: self.graphManager.delete_edge(e))
 
