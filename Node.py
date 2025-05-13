@@ -9,6 +9,7 @@ class Node:
         self.color = color
         self.NodeId = None
         self.TextId = None
+        self.MaxAlocacoesId = None
         self.radius = 30
         self.tipoNode = tipoNode
         self.edges: list[Edge] = []

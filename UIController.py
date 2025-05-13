@@ -5,7 +5,6 @@ from Enums import ETipoEdge
 from GraphManager import Graphmanager as GM
 from Node import Node
 from dialog import ask_max_allocations
-import time
 
 class UIController:
     def __init__(self, root, canvas:tk.Canvas, graphManager:GM):
@@ -63,6 +62,9 @@ class UIController:
         x,y = node.position
         node.NodeId = self.canvas.create_oval(x - node.radius, y - node.radius, x + node.radius, y + node.radius, fill=node.color, tags=(node.id))
         node.TextId = self.canvas.create_text(x, y, text=node.text, fill="white", tags=(node.id))
+
+        if(node.max_alocacoes):
+            node.MaxAlocacoesId = self.canvas.create_text(x, y + node.radius/2, text=str(node.max_alocacoes), fill="gray", tags=(node.id))
     
     def bind_node_events(self, node: Node):
         self.canvas.tag_bind(node.id, "<Button-1>", lambda e, n=node: self.on_node_click(n))
@@ -103,6 +105,11 @@ class UIController:
             self.delete_edge(edge)
 
         self.canvas.delete(node.NodeId)
+        self.canvas.delete(node.TextId)
+        
+        if(node.MaxAlocacoesId):
+            self.canvas.delete(node.MaxAlocacoesId)
+
         self.graphManager.delete_node(node)
 
     def delete_edge(self,edge:Edge):
