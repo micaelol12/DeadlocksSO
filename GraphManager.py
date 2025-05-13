@@ -4,26 +4,29 @@ from Edge import Edge
 
 class Graphmanager:
     def __init__(self,canvas):
-        self.nodes: dict[str,Node] = {}
+        self.processos: dict[str,Node] = {}
+        self.recursos: dict[str,Node] = {}
         self.edges: dict[str,Edge] = {}
         self.node_count = {'P': 0, 'R': 0, 'E': 0}
         self.selected_node:Node = None
         self.canvas = canvas
 
     def clear(self):
-        self.nodes.clear()
+        self.processos.clear()
+        self.recursos.clear()
         self.edges.clear()
         self.node_count = {'P': 0, 'R': 0, 'E': 0}
         self.selected_node = None
     
     def delete_node(self, node:Node):
-        if node.id in self.nodes:
-            node.delete()
+        if node.id in self.recursos:
+            del self.recursos[node.id]
+        else:
+            del self.processos[node.id]
 
-            del self.nodes[node.id]
-
-            if self.selected_node == node:
-                self.selected_node = None
+        node.delete()
+        if self.selected_node == node:
+            self.selected_node = None
     
     def delete_edge(self,edge:Edge):
         if edge.id in self.edges:
@@ -35,7 +38,7 @@ class Graphmanager:
             del self.edges[edge.id]
     
     def has_node_at_position(self, x, y) -> bool:
-        return any(node.is_in_position(x, y) for node in self.nodes.values())
+        return any(node.is_in_position(x, y) for node in self.recursos.values()) or any(node.is_in_position(x, y) for node in self.processos.values())
     
     def add_edge(self,origem:Node,destino:Node)-> Edge:
         self.node_count['E'] += 1
@@ -55,6 +58,7 @@ class Graphmanager:
             edge = self.add_edge(self.selected_node,node)
             self.selected_node.unhighlight_node()
             self.selected_node = None
+            return edge
         
     def can_add_edge(self,node:Node) -> bool:
         isDiferenteNode =  self.selected_node != node
@@ -71,7 +75,9 @@ class Graphmanager:
         id = f"P{self.node_count['P']}"
 
         node = Node(x,y,id,name,self.canvas,"blue",ETipoNode.PROCESSO)
-        self.create_node(node)
+        self.processos[node.id] = node
+        node.print_node()
+
         return node
     
     def add_resource(self,x,y,max_alocations):
@@ -81,9 +87,8 @@ class Graphmanager:
             id = f"R{self.node_count['R']}"
 
             node = Node(x,y,id,name,self.canvas,"orange",ETipoNode.RECURSO,max_alocations)
-            self.create_node(node)
+            self.recursos[node.id] = node
+            node.print_node()
+
             return node
 
-    def create_node(self,node:Node):
-        node.print_node()
-        self.nodes[node.id] = node

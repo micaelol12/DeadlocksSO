@@ -68,7 +68,7 @@ class DeadlockSimulator:
 
     def add_edge(self,node:Node):
         edge = self.graphManager.try_add_edge(node)
-        
+
         if edge:
             edge.print_edge()
             self.canvas.tag_bind(edge.id, "<Button-3>", lambda event, e=edge: self.graphManager.delete_edge(e))
@@ -96,7 +96,6 @@ class DeadlockSimulator:
         
         if self.create_resource:
             self.add_resource(event.x,event.y)
-
 
     def detect_deadlock(self):
         return True
