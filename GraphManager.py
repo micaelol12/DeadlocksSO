@@ -130,15 +130,8 @@ class Graphmanager:
                         # Processo pode terminar: libera os recursos
                         for j in range(recurso_len):
                             work[j] += allocation[i][j]
-
-                        for edge in self.edges.values():
-                            if (
-                                edge.destino.id == processo_ids[i]
-                                or edge.origem.id == processo_ids[i]
-                            ):
-                                liberaveis.append(edge.id)
-
-
+                        
+                        liberaveis.append(processo_ids[i])
                         finish[i] = True
                         progress = True
             if not progress:

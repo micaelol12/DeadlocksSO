@@ -134,10 +134,10 @@ class UIController:
     
     def remove_edges_step_by_step(self, liberaveis, deadlocked, index=0):
         if index < len(liberaveis):
-            edge_id = liberaveis[index]
-            edge = self.graphManager.edges.get(edge_id)
-            if edge:
-                self.delete_edge(edge)
+            node_id = liberaveis[index]
+            node = self.graphManager.processos.get(node_id)
+            if node:
+                self.delete_node(node)
             # Chama recursivamente o próximo passo após 500ms
             self.canvas.after(500, lambda: self.remove_edges_step_by_step(liberaveis, deadlocked, index + 1))
         else:
