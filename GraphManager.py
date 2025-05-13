@@ -50,16 +50,16 @@ class Graphmanager:
 
         return edge
 
-
     def try_add_edge(self,node:Node):
+        if self.can_add_edge(node):
+            edge = self.add_edge(self.selected_node,node)
+            self.selected_node.unhighlight_node()
+            self.selected_node = None
+        
+    def can_add_edge(self,node:Node) -> bool:
         isDiferenteNode =  self.selected_node != node
-        iDiferenteNodeType = self.selected_node.tipoNode != node.tipoNode
-
-        if isDiferenteNode and iDiferenteNodeType:
-                edge = self.add_edge(self.selected_node,node)
-                self.selected_node.unhighlight_node()
-                self.selected_node = None
-                return edge
+        iDiferenteNodeType = self.selected_node.tipoNode != node.tipoNode   
+        return isDiferenteNode and iDiferenteNodeType
         
     def seleciona_node(self,node:Node):
         node.highlight_node()
@@ -69,21 +69,21 @@ class Graphmanager:
         self.node_count['P'] += 1
         name = f"Processo {self.node_count['P']}"
         id = f"P{self.node_count['P']}"
-        
-        return self.create_node(name,id, "blue",x,y,ETipoNode.PROCESSO)
-    
+
+        node = Node(x,y,id,name,self.canvas,"blue",ETipoNode.PROCESSO)
+        self.create_node(node)
+        return node
     
     def add_resource(self,x,y,max_alocations):
         if(max_alocations):
             self.node_count['R'] += 1
             name = f"Recurso {self.node_count['R']}"
             id = f"R{self.node_count['R']}"
-            return self.create_node(name,id,"orange",x,y,ETipoNode.RECURSO,max_alocations)
 
-    def create_node(self, name, id , color, x, y,tipo: ETipoNode,max_edges:int = None) -> Node:
-        node = Node(x,y,id,name,self.canvas,color,tipo,max_edges)
+            node = Node(x,y,id,name,self.canvas,"orange",ETipoNode.RECURSO,max_alocations)
+            self.create_node(node)
+            return node
 
+    def create_node(self,node:Node):
         node.print_node()
-        self.nodes[id] = node
-
-        return node
+        self.nodes[node.id] = node
