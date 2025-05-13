@@ -83,73 +83,7 @@ class Graphmanager:
         return node
     
     def detect_deadlock_with_terminable_edges(self):
-        import copy
-
-        # Vetor de recursos disponíveis
-        available = {}
-        # Total de recursos por tipo
-        total = {}
-        # Atribuição atual de recursos a cada processo
-        allocation = {pid: {} for pid in self.processos}
-        # Necessidades restantes de cada processo
-        request = {pid: {} for pid in self.processos}
-
-        # Inicializar total de instâncias e allocation
-        for recurso in self.recursos.values():
-            total[recurso.id] = recurso.max_alocacoes
-            available[recurso.id] = recurso.max_alocacoes
-
-        for edge in self.edges.values():
-            if edge.tipo == ETipoEdge.ALOCADO:
-                pid = edge.destino.id  # processo
-                rid = edge.origem.id   # recurso
-
-                allocation[pid][rid] = allocation[pid].get(rid, 0) + 1
-                available[rid] -= 1  # recurso já alocado
-            elif edge.tipo == ETipoEdge.PEDIDO:
-                pid = edge.origem.id
-                rid = edge.destino.id
-
-                request[pid][rid] = request[pid].get(rid, 0) + 1
-
-        # Cópia dos dados para simular execução
-        finished = {pid: False for pid in self.processos}
-        safe_edges = []
-
-        changed = True
-        while changed:
-            changed = False
-            for pid in self.processos:
-                if finished[pid]:
-                    continue
-
-                # O processo pode terminar?
-                can_finish = True
-                for rid, amount in request[pid].items():
-                    if available.get(rid, 0) < amount:
-                        can_finish = False
-                        break
-
-                if can_finish:
-                    finished[pid] = True
-                    changed = True
-
-                    # Libera os recursos alocados pelo processo
-                    for rid, amount in allocation[pid].items():
-                        available[rid] += amount
-
-                    # Arestas alocadas que podem ser removidas
-                    for edge in self.edges.values():
-                        if (
-                            edge.tipo == ETipoEdge.ALOCADO
-                            and edge.destino.id == pid
-                        ):
-                            safe_edges.append(edge.id)
-
-        # Processos não finalizados estão em deadlock
-        deadlocked = [pid for pid, done in finished.items() if not done]
-
-        return deadlocked, safe_edges
+        return True
 
 
 
