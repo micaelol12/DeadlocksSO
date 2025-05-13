@@ -2,7 +2,7 @@ from Enums import ETipoNode,ETipoEdge
 from Edge import Edge
 
 class Node:
-    def __init__(self,x:int,y:int,id:str,text:str,color:str,tipoNode:ETipoNode,max_edges:int = None):
+    def __init__(self,x:int,y:int,id:str,text:str,color:str,tipoNode:ETipoNode,max_alocacoes:int = None):
         self.position:tuple[int,int] = (x,y)
         self.id = id
         self.text = text
@@ -12,14 +12,14 @@ class Node:
         self.radius = 30
         self.tipoNode = tipoNode
         self.edges: list[Edge] = []
-        self.max_edges = max_edges
+        self.max_alocacoes = max_alocacoes
 
     def can_add_edge(self,edge:Edge = None) -> bool:
         if(edge and edge.tipo == ETipoEdge.PEDIDO): 
             return True
 
         alocados = [e for e in self.edges if e.tipo == ETipoEdge.ALOCADO]
-        return self.tipoNode == ETipoNode.PROCESSO or len(alocados) < self.max_edges
+        return self.tipoNode == ETipoNode.PROCESSO or len(alocados) < self.max_alocacoes
 
     def add_edge(self,edge:Edge) -> bool:
         if self.can_add_edge(edge):

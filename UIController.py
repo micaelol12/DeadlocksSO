@@ -5,6 +5,7 @@ from Enums import ETipoEdge
 from GraphManager import Graphmanager as GM
 from Node import Node
 from dialog import ask_max_allocations
+import time
 
 class UIController:
     def __init__(self, root, canvas:tk.Canvas, graphManager:GM):
@@ -15,7 +16,6 @@ class UIController:
 
         self.setup_buttons(root)
         self.canvas.bind("<Button-1>", self.handle_canvas_click)
-
 
     def setup_buttons(self, root):
         frame = tk.LabelFrame(root, text="Controles", padx=5, pady=5)
@@ -90,7 +90,7 @@ class UIController:
             self.unhighlight_node()
         else:
             if not node.can_add_edge():
-                messagebox.showwarning("Limite atingido", f"Máximo de alocações: {node.max_edges}")
+                messagebox.showwarning("Limite atingido", f"Máximo de alocações: {node.max_alocacoes}")
                 return
             
             self.highlight_node(node)
@@ -119,8 +119,30 @@ class UIController:
 
     def highlight_node(self,node:Node):
         self.canvas.itemconfig(node.NodeId, outline="red", width=2)
-        self.graphManager.seleciona_node(node)
+        self.graphManager.select_node(node)
 
     def detect_deadlock(self):
-        # Aqui você poderá chamar um detector real futuramente
-        messagebox.showinfo("Deadlock", "Função ainda não implementada.")
+        deadlocked, liberaveis = self.graphManager.detect_deadlock_with_terminable_edges()
+        self.remove_edges_step_by_step(liberaveis, deadlocked)
+    
+    def remove_edges_step_by_step(self, liberaveis, deadlocked, index=0):
+        if index < len(liberaveis):
+            edge_id = liberaveis[index]
+            edge = self.graphManager.edges.get(edge_id)
+            if edge:
+                self.delete_edge(edge)
+            # Chama recursivamente o próximo passo após 500ms
+            self.canvas.after(500, lambda: self.remove_edges_step_by_step(liberaveis, deadlocked, index + 1))
+        else:
+            # Após terminar a remoção, mostra a mensagem
+            if deadlocked:
+                messagebox.showwarning("Deadlock detectado", f"Processos em deadlock: {', '.join(deadlocked)}")
+                self.highlight_deadlocked_processes(deadlocked)
+            else:
+                messagebox.showinfo("Sem Deadlock", "Nenhum deadlock foi detectado.")
+
+    def highlight_deadlocked_processes(self, deadlocked_ids: list[str]):
+        for pid in deadlocked_ids:
+            processo = self.graphManager.processos.get(pid)
+            if processo:
+                self.canvas.itemconfig(processo.NodeId, fill="red")
