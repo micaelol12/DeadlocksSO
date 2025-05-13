@@ -14,8 +14,8 @@ class Edge:
 
     def get_tipo(self):
         if self.origem.tipoNode == ETipoNode.PROCESSO and self.destino.tipoNode == ETipoNode.RECURSO:
-            return ETipoEdge.PEDIDO
-        return ETipoEdge.ALOCADO
+            return ETipoEdge.REQUISACAO
+        return ETipoEdge.ALOCACAO
    
 
     def get_bezier_arrow(self):

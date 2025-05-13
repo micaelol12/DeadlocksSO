@@ -69,7 +69,7 @@ class UIController:
         self.canvas.tag_bind(node.id, "<Button-3>", lambda e, n=node: self.delete_node(n))
 
     def print_edge(self,edge:Edge):
-        color = 'red' if edge.tipo == ETipoEdge.ALOCADO else 'green'
+        color = 'red' if edge.tipo == ETipoEdge.ALOCACAO else 'green'
         ctrl_x,ctrl_y,x1,y1,x2,y2 = edge.get_bezier_arrow()
 
         element =  self.canvas.create_line(x1, y1, ctrl_x, ctrl_y, x2, y2,

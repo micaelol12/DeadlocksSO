@@ -5,5 +5,5 @@ class ETipoNode(Enum):
     RECURSO = 2
 
 class ETipoEdge(Enum):
-    PEDIDO = 1
-    ALOCADO = 2
+    REQUISACAO = 1
+    ALOCACAO = 2

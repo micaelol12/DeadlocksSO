@@ -15,10 +15,10 @@ class Node:
         self.max_alocacoes = max_alocacoes
 
     def can_add_edge(self,edge:Edge = None) -> bool:
-        if(edge and edge.tipo == ETipoEdge.PEDIDO): 
+        if(edge and edge.tipo == ETipoEdge.REQUISACAO): 
             return True
 
-        alocados = [e for e in self.edges if e.tipo == ETipoEdge.ALOCADO]
+        alocados = [e for e in self.edges if e.tipo == ETipoEdge.ALOCACAO]
         return self.tipoNode == ETipoNode.PROCESSO or len(alocados) < self.max_alocacoes
 
     def add_edge(self,edge:Edge) -> bool:
