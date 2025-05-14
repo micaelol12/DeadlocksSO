@@ -158,7 +158,7 @@ class UIController:
             if node:
                 self.delete_node_edges(node)
             # Chama recursivamente o próximo passo após 500ms
-            self.canvas.after(500, lambda: self.remove_edges_step_by_step(liberaveis, deadlocked, index + 1))
+            self.canvas.after(2000, lambda: self.remove_edges_step_by_step(liberaveis, deadlocked, index + 1))
         else:
             # Após terminar a remoção, mostra a mensagem
             if deadlocked:
