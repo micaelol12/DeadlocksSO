@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import messagebox
 from Edge import Edge
 from Enums import ETipoEdge
+from File import loadData, storeData
 from GraphManager import Graphmanager as GM
 from Node import Node
 from dialog import ask_max_allocations
@@ -22,11 +23,27 @@ class UIController:
 
         self.btn_process = tk.Button(frame, text="Novo Processo", command=self.toggle_process_mode)
         self.btn_resource = tk.Button(frame, text="Novo Recurso", command=self.toggle_resource_mode)
-
         self.btn_process.pack(side=tk.LEFT, padx=5)
         self.btn_resource.pack(side=tk.LEFT, padx=5)
         tk.Button(frame, text="Detectar Deadlock", command=self.detect_deadlock).pack(side=tk.LEFT, padx=5)
         tk.Button(frame, text="Limpar", command=self.clear_canvas).pack(side=tk.LEFT, padx=5)
+        tk.Button(frame, text="Salvar", command=self.salvar_data).pack(side=tk.LEFT, padx=5)
+        tk.Button(frame, text="Load", command=self.carregar_data).pack(side=tk.LEFT, padx=5)
+    
+    def salvar_data(self):
+        storeData(self.graphManager)
+    
+    def carregar_data(self):
+        self.graphManager = loadData()
+        
+        for processo in self.graphManager.processos.values():
+            self.print_node(processo)
+        
+        for processo in self.graphManager.recursos.values():
+            self.print_node(processo)
+            
+        for edge in self.graphManager.edges.values():
+            self.print_edge(edge)
     
     def toggle_process_mode(self):
         self.create_process = not self.create_process
@@ -100,10 +117,12 @@ class UIController:
             self.create_process = self.create_resource = False
             self.update_button_states()
 
-    def delete_node(self,node:Node):
+    def delete_node_edges(self,node:Node):
         for edge in node.edges.copy():
             self.delete_edge(edge)
 
+    def delete_node(self,node:Node):
+        self.delete_node_edges()
         self.canvas.delete(node.NodeId)
         self.canvas.delete(node.TextId)
         
@@ -137,7 +156,7 @@ class UIController:
             node_id = liberaveis[index]
             node = self.graphManager.processos.get(node_id)
             if node:
-                self.delete_node(node)
+                self.delete_node_edges(node)
             # Chama recursivamente o próximo passo após 500ms
             self.canvas.after(500, lambda: self.remove_edges_step_by_step(liberaveis, deadlocked, index + 1))
         else:
