@@ -1,20 +1,40 @@
 import pickle
+from tkinter import filedialog
 
 from GraphManager import Graphmanager
 
-def storeData(graphManager:Graphmanager):
-    # Its important to use binary mode
-    dbfile = open('examplePickle', 'wb')
-    
-    # source, destination
-    pickle.dump(graphManager, dbfile)                    
-    dbfile.close()
+def storeData(graphManager:Graphmanager) -> bool:
+    caminho_arquivo = filedialog.asksaveasfilename(
+        title="Salvar arquivo como...",
+        defaultextension=".pkl",
+        filetypes=[("Arquivo Pickle", "*.pkl"), ("Todos os arquivos", "*.*")]
+    )
+
+    if not caminho_arquivo:
+        return False
+
+    try:
+        with open(caminho_arquivo, 'wb') as dbfile:
+            pickle.dump(graphManager, dbfile)
+        return True
+    except Exception as e:
+        return False
 
 def loadData() -> Graphmanager:
-    # for reading also binary mode is important
-    dbfile = open('examplePickle', 'rb')    
-    db = pickle.load(dbfile)
-    dbfile.close()
-    return db
+    caminho_arquivo = filedialog.askopenfilename(
+        title="Abrir arquivo",
+        defaultextension=".pkl",
+        filetypes=[("Arquivo Pickle", "*.pkl"), ("Todos os arquivos", "*.*")]
+    )
+
+    if not caminho_arquivo:
+        return None
+
+    try:
+        with open(caminho_arquivo, 'rb') as dbfile:
+            graphManager = pickle.load(dbfile)
+        return graphManager
+    except Exception as e:
+        return None
     
   

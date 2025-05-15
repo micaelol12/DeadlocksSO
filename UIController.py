@@ -31,19 +31,30 @@ class UIController:
         tk.Button(frame, text="Load", command=self.carregar_data).pack(side=tk.LEFT, padx=5)
     
     def salvar_data(self):
-        storeData(self.graphManager)
+        if not storeData(self.graphManager):
+          messagebox.showinfo("Erro ao Salvar", "Não foi possível salvar o grafo")
     
     def carregar_data(self):
-        self.graphManager = loadData()
+        self.clear_canvas()
+
+        gm = loadData()
+        if not gm:
+               messagebox.showinfo("Erro ao Carregar", "Não foi possível carregar o grafo")
+               return 
+        
+        self.graphManager = gm
         
         for processo in self.graphManager.processos.values():
             self.print_node(processo)
+            self.bind_node_events(processo)
         
         for processo in self.graphManager.recursos.values():
             self.print_node(processo)
+            self.bind_node_events(processo)
             
         for edge in self.graphManager.edges.values():
             self.print_edge(edge)
+            self.bind_edge_events(edge)
     
     def toggle_process_mode(self):
         self.create_process = not self.create_process
@@ -99,12 +110,15 @@ class UIController:
                                        tags=(edge.id))
         edge.edgeElementId = element
 
+    def bind_edge_events(self,edge:Edge):
+        self.canvas.tag_bind(edge.id, "<Button-3>", lambda e, edge=edge: self.delete_edge(edge))
+
     def on_node_click(self, node: Node):
         if self.graphManager.selected_node:
             if self.graphManager.can_add_edge(node):
                 edge = self.graphManager.add_edge(node)
                 self.print_edge(edge)
-                self.canvas.tag_bind(edge.id, "<Button-3>", lambda e, edge=edge: self.delete_edge(edge))
+                self.bind_edge_events(edge)
             
             self.unhighlight_node()
         else:
@@ -122,7 +136,7 @@ class UIController:
             self.delete_edge(edge)
 
     def delete_node(self,node:Node):
-        self.delete_node_edges()
+        self.delete_node_edges(node)
         self.canvas.delete(node.NodeId)
         self.canvas.delete(node.TextId)
         
