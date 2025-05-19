@@ -40,4 +40,3 @@ class Node:
     def is_in_position(self,x:int,y:int) -> bool:
         nx,ny = self.position
         return abs(x - nx) <= self.radius and abs(y - ny) <= self.radius
-    

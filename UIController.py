@@ -93,7 +93,7 @@ class UIController:
         node.TextId = self.canvas.create_text(x, y, text=node.text, fill="white", tags=(node.id))
 
         if(node.max_alocacoes):
-            node.MaxAlocacoesId = self.canvas.create_text(x, y + node.radius/2, text=str(node.max_alocacoes), fill="gray", tags=(node.id))
+           node.MaxAlocacoesId = self.canvas.create_text(x, y + node.radius/2, text=str(node.max_alocacoes), fill="gray", tags=(node.id))
     
     def bind_node_events(self, node: Node):
         self.canvas.tag_bind(node.id, "<Button-1>", lambda e, n=node: self.on_node_click(n))
@@ -188,15 +188,17 @@ class UIController:
             if processo:
                 self.canvas.itemconfig(processo.NodeId, fill="red")
 
+    def edit_node(self,node:Node):
+        max = ask_max_allocations(str(node.max_alocacoes))
+        node.max_alocacoes = max
+        self.canvas.itemconfig(node.MaxAlocacoesId, text=str(max))
+
     def abrir_menu_contexto(self, node:Node,event):
-        
         if node.tipoNode == ETipoNode.RECURSO:
             menu = tk.Menu(self.root, tearoff=0)
-            x,y = node.position
-
             menu.add_command(label="Remover", command=lambda: self.delete_node(node))
-            menu.add_command(label="Editar Recurso")
-            menu.post(event.x, event.y)
+            menu.add_command(label="Editar Recurso",command=lambda: self.edit_node(node))
+            menu.post(event.x_root, event.y_root)
         else:
             self.delete_node(node)
         
