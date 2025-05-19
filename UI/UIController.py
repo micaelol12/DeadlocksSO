@@ -29,7 +29,7 @@ class UIController:
         tk.Button(frame, text="Detectar Deadlock", command=self.detect_deadlock).pack(side=tk.LEFT, padx=5)
         tk.Button(frame, text="Limpar", command=self.clear_canvas).pack(side=tk.LEFT, padx=5)
         tk.Button(frame, text="Salvar", command=self.salvar_data).pack(side=tk.LEFT, padx=5)
-        tk.Button(frame, text="Load", command=self.carregar_data).pack(side=tk.LEFT, padx=5)
+        tk.Button(frame, text="Carregar", command=self.carregar_data).pack(side=tk.LEFT, padx=5)
     
     def salvar_data(self):
         if not storeData(self.graphManager):
