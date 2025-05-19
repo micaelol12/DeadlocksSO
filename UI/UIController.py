@@ -11,8 +11,7 @@ class UIController:
     def __init__(self, root, canvas:tk.Canvas, graphManager:GM):
         self.canvas = canvas
         self.graphManager = graphManager
-        self.create_process = False
-        self.create_resource = False
+        self.mode:ETipoNode = False
         self.root = root
 
         self.setup_buttons(root)
@@ -56,31 +55,33 @@ class UIController:
         for edge in self.graphManager.edges.values():
             self.print_edge(edge)
             self.bind_edge_events(edge)
-    
-    def toggle_process_mode(self):
-        self.create_process = not self.create_process
-        self.create_resource = False
+
+    def set_mode(self,mode:ETipoNode):
+        if self.mode == mode:
+            self.mode = None
+        self.mode = mode
         self.update_button_states()
+
+    def toggle_process_mode(self):
+        self.set_mode(ETipoNode.PROCESSO)
 
     def toggle_resource_mode(self):
-        self.create_resource = not self.create_resource
-        self.create_process = False
-        self.update_button_states()
+        self.set_mode(ETipoNode.RECURSO)
 
     def update_button_states(self):
-        self.btn_process.config(bg='red' if self.create_process else 'SystemButtonFace')
-        self.btn_resource.config(bg='red' if self.create_resource else 'SystemButtonFace')
+        self.btn_process.config(bg='red' if self.mode == ETipoNode.PROCESSO else 'SystemButtonFace')
+        self.btn_resource.config(bg='red' if self.mode == ETipoNode.RECURSO  else 'SystemButtonFace')
 
     def handle_canvas_click(self, event):
         if self.graphManager.has_node_at_position(event.x, event.y):
             return
 
-        if self.create_process:
+        if self.mode == ETipoNode.PROCESSO:
             node = self.graphManager.add_process(event.x, event.y)
             self.print_node(node)
             self.bind_node_events(node)
 
-        elif self.create_resource:
+        elif self.mode == ETipoNode.RECURSO:
             max_allocs = ask_max_allocations()
             if max_allocs is not None:
                 node = self.graphManager.add_resource(event.x, event.y, max_allocs)
@@ -129,7 +130,7 @@ class UIController:
             
             self.highlight_node(node)
 
-            self.create_process = self.create_resource = False
+            self.mode = None
             self.update_button_states()
 
     def delete_node_edges(self,node:Node):
