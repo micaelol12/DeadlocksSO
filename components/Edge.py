@@ -1,8 +1,8 @@
-from Enums import ETipoEdge, ETipoNode
+from UI.Enums import ETipoEdge, ETipoNode
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from Node import Node
+    from components.Node import Node
 
 class Edge:
     def __init__(self, id: str, origem: 'Node', destino: 'Node'):

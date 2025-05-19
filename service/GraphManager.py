@@ -1,6 +1,6 @@
-from Enums import ETipoEdge, ETipoNode
-from Node import Node
-from Edge import Edge
+from UI.Enums import ETipoEdge, ETipoNode
+from components.Node import Node
+from components.Edge import Edge
 
 class Graphmanager:
     def __init__(self):

@@ -1,11 +1,11 @@
 import tkinter as tk
 from tkinter import messagebox
-from Edge import Edge
-from Enums import ETipoEdge, ETipoNode
-from File import loadData, storeData
-from GraphManager import Graphmanager as GM
-from Node import Node
-from dialog import ask_max_allocations
+from components.Edge import Edge
+from UI.Enums import ETipoEdge, ETipoNode
+from service.File import loadData, storeData
+from service.GraphManager import Graphmanager as GM
+from components.Node import Node
+from utils.dialog import ask_max_allocations
 
 class UIController:
     def __init__(self, root, canvas:tk.Canvas, graphManager:GM):
@@ -190,8 +190,11 @@ class UIController:
 
     def edit_node(self,node:Node):
         max = ask_max_allocations(str(node.max_alocacoes))
-        node.max_alocacoes = max
-        self.canvas.itemconfig(node.MaxAlocacoesId, text=str(max))
+        if max < node.max_alocacoes:
+             messagebox.showwarning("Não foi possível editar", "Você deve removar as alocações para diminuir o número máximo")
+        else:
+            node.max_alocacoes = max
+            self.canvas.itemconfig(node.MaxAlocacoesId, text=str(max))
 
     def abrir_menu_contexto(self, node:Node,event):
         if node.tipoNode == ETipoNode.RECURSO:

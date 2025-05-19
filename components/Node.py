@@ -1,5 +1,5 @@
-from Enums import ETipoNode,ETipoEdge
-from Edge import Edge
+from UI.Enums import ETipoNode,ETipoEdge
+from components.Edge import Edge
 
 class Node:
     def __init__(self,x:int,y:int,id:str,text:str,color:str,tipoNode:ETipoNode,max_alocacoes:int = None):
