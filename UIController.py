@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
 from Edge import Edge
-from Enums import ETipoEdge
+from Enums import ETipoEdge, ETipoNode
 from File import loadData, storeData
 from GraphManager import Graphmanager as GM
 from Node import Node
@@ -13,6 +13,7 @@ class UIController:
         self.graphManager = graphManager
         self.create_process = False
         self.create_resource = False
+        self.root = root
 
         self.setup_buttons(root)
         self.canvas.bind("<Button-1>", self.handle_canvas_click)
@@ -96,7 +97,7 @@ class UIController:
     
     def bind_node_events(self, node: Node):
         self.canvas.tag_bind(node.id, "<Button-1>", lambda e, n=node: self.on_node_click(n))
-        self.canvas.tag_bind(node.id, "<Button-3>", lambda e, n=node: self.delete_node(n))
+        self.canvas.tag_bind(node.id, "<Button-3>", lambda e, n=node: self.abrir_menu_contexto(n,e))
 
     def print_edge(self,edge:Edge):
         color = 'red' if edge.tipo == ETipoEdge.ALOCACAO else 'green'
@@ -186,3 +187,16 @@ class UIController:
             processo = self.graphManager.processos.get(pid)
             if processo:
                 self.canvas.itemconfig(processo.NodeId, fill="red")
+
+    def abrir_menu_contexto(self, node:Node,event):
+        
+        if node.tipoNode == ETipoNode.RECURSO:
+            menu = tk.Menu(self.root, tearoff=0)
+            x,y = node.position
+
+            menu.add_command(label="Remover", command=lambda: self.delete_node(node))
+            menu.add_command(label="Editar Recurso")
+            menu.post(event.x, event.y)
+        else:
+            self.delete_node(node)
+        

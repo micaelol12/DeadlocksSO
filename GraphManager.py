@@ -32,9 +32,20 @@ class Graphmanager:
             edge.destino.delete_edge(edge)
 
             del self.edges[edge.id]
+
+    def get_node_at_position(self,x,y) -> Node:
+        for node in self.recursos.values():
+            if node.is_in_position(x, y):
+                return node
+            
+        for node in self.processos.values():
+            if node.is_in_position(x, y):
+                return node
+
+        return 
     
     def has_node_at_position(self, x, y) -> bool:
-        return any(node.is_in_position(x, y) for node in self.recursos.values()) or any(node.is_in_position(x, y) for node in self.processos.values())
+        return self.get_node_at_position(x,y) is not None
     
     def add_edge(self,destino:Node)-> Edge:
         self.node_count['E'] += 1
