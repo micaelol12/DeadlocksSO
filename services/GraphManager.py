@@ -84,7 +84,7 @@ class Graphmanager:
 
         return node
 
-    def add_resource(self, x, y, max_alocations):
+    def add_resource(self, x, y, max_alocations) -> Node:
         self.node_count["R"] += 1
         name = f"Recurso {self.node_count['R']}"
         id = f"R{self.node_count['R']}"
@@ -94,7 +94,7 @@ class Graphmanager:
 
         return node
 
-    def detect_deadlock_with_terminable_edges(self):
+    def detect_deadlock_with_terminable_edges(self) -> tuple[list[str], list]:
         # Mapear índices
         processo_ids = list(self.processos.keys())
         recurso_ids = list(self.recursos.keys())
