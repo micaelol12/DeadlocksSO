@@ -2,22 +2,23 @@ from UI.Enums import ETipoEdge, ETipoNode
 from components.Node import Node
 from components.Edge import Edge
 
+
 class Graphmanager:
     def __init__(self):
-        self.processos: dict[str,Node] = {}
-        self.recursos: dict[str,Node] = {}
-        self.edges: dict[str,Edge] = {}
-        self.node_count = {'P': 0, 'R': 0, 'E': 0}
-        self.selected_node:Node = None
+        self.processos: dict[str, Node] = {}
+        self.recursos: dict[str, Node] = {}
+        self.edges: dict[str, Edge] = {}
+        self.node_count = {"P": 0, "R": 0, "E": 0}
+        self.selected_node: Node = None
 
     def clear(self):
         self.processos.clear()
         self.recursos.clear()
         self.edges.clear()
-        self.node_count = {'P': 0, 'R': 0, 'E': 0}
+        self.node_count = {"P": 0, "R": 0, "E": 0}
         self.selected_node = None
-    
-    def delete_node(self, node:Node):
+
+    def delete_node(self, node: Node):
         if node.id in self.recursos:
             del self.recursos[node.id]
         else:
@@ -25,37 +26,37 @@ class Graphmanager:
 
         if self.selected_node == node:
             self.selected_node = None
-    
-    def delete_edge(self,edge:Edge):
+
+    def delete_edge(self, edge: Edge):
         if edge.id in self.edges:
             edge.origem.delete_edge(edge)
             edge.destino.delete_edge(edge)
 
             del self.edges[edge.id]
 
-    def get_node_at_position(self,x,y) -> Node:
+    def get_node_at_position(self, x, y) -> Node:
         for node in self.recursos.values():
             if node.is_in_position(x, y):
                 return node
-            
+
         for node in self.processos.values():
             if node.is_in_position(x, y):
                 return node
 
-        return 
-    
+        return
+
     def has_node_at_position(self, x, y) -> bool:
-        return self.get_node_at_position(x,y) is not None
-    
-    def add_edge(self,destino:Node)-> Edge:
-        self.node_count['E'] += 1
+        return self.get_node_at_position(x, y) is not None
+
+    def add_edge(self, destino: Node) -> Edge:
+        self.node_count["E"] += 1
         id = f"E{self.node_count['E']}"
-        
+
         if not self.selected_node:
             raise ValueError("Nenhum nó selecionado para origem da aresta.")
 
         origem = self.selected_node
-        edge = Edge(id,origem,destino)
+        edge = Edge(id, origem, destino)
 
         origem.add_edge(edge)
         destino.add_edge(edge)
@@ -63,36 +64,36 @@ class Graphmanager:
         self.edges[id] = edge
 
         return edge
-        
-    def can_add_edge(self,node:Node) -> bool:
-        isDiferenteNode =  self.selected_node != node
-        iDiferenteNodeType = self.selected_node.tipoNode != node.tipoNode 
+
+    def can_add_edge(self, node: Node) -> bool:
+        isDiferenteNode = self.selected_node != node
+        iDiferenteNodeType = self.selected_node.tipoNode != node.tipoNode
 
         return isDiferenteNode and iDiferenteNodeType
-        
+
     def select_node(self, node: Node):
         self.selected_node = node
-    
-    def add_process(self,x,y) -> Node:
-        self.node_count['P'] += 1
+
+    def add_process(self, x, y) -> Node:
+        self.node_count["P"] += 1
         name = f"Processo {self.node_count['P']}"
         id = f"P{self.node_count['P']}"
 
-        node = Node(x,y,id,name,"blue",ETipoNode.PROCESSO)
+        node = Node(x, y, id, name, "blue", ETipoNode.PROCESSO)
         self.processos[node.id] = node
 
         return node
-    
-    def add_resource(self,x,y,max_alocations):
-        self.node_count['R'] += 1
+
+    def add_resource(self, x, y, max_alocations):
+        self.node_count["R"] += 1
         name = f"Recurso {self.node_count['R']}"
         id = f"R{self.node_count['R']}"
 
-        node = Node(x,y,id,name,"orange",ETipoNode.RECURSO,max_alocations)
+        node = Node(x, y, id, name, "orange", ETipoNode.RECURSO, max_alocations)
         self.recursos[node.id] = node
 
         return node
-    
+
     def detect_deadlock_with_terminable_edges(self):
         # Mapear índices
         processo_ids = list(self.processos.keys())
@@ -105,9 +106,9 @@ class Graphmanager:
         recurso_len = len(recurso_ids)
 
         # Inicializar matrizes
-        allocation = [[0]*recurso_len for _ in range(process_len)]
-        request = [[0]*recurso_len for _ in range(process_len)]
-        available = [0]*recurso_len
+        allocation = [[0] * recurso_len for _ in range(process_len)]
+        request = [[0] * recurso_len for _ in range(process_len)]
+        available = [0] * recurso_len
 
         # 1. Preencher a matriz de alocação
         for edge in self.edges.values():
@@ -115,7 +116,7 @@ class Graphmanager:
                 i = index_proc[edge.destino.id]
                 j = index_recurso[edge.origem.id]
                 allocation[i][j] += 1
-            
+
             elif edge.tipo == ETipoEdge.REQUISACAO:
                 i = index_proc[edge.origem.id]
                 j = index_recurso[edge.destino.id]
@@ -129,7 +130,7 @@ class Graphmanager:
 
         # 3. Algoritmo de detecção de deadlock
         work = available[:]
-        finish = [False]*process_len
+        finish = [False] * process_len
         liberaveis = []
 
         while True:
@@ -141,7 +142,7 @@ class Graphmanager:
                         # Processo pode terminar: libera os recursos
                         for j in range(recurso_len):
                             work[j] += allocation[i][j]
-                        
+
                         liberaveis.append(processo_ids[i])
                         finish[i] = True
                         progress = True
@@ -152,9 +153,4 @@ class Graphmanager:
             processo_ids[i] for i in range(process_len) if not finish[i]
         ]
 
-        return processos_em_deadlock,liberaveis
-
-        
-
-
-
+        return processos_em_deadlock, liberaveis
