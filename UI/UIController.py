@@ -2,8 +2,8 @@ import tkinter as tk
 from tkinter import messagebox
 from components.Edge import Edge
 from UI.Enums import ETipoEdge, ETipoNode
-from service.File import loadData, storeData
-from service.GraphManager import Graphmanager as GM
+from services.File import loadData, storeData
+from services.GraphManager import Graphmanager as GM
 from components.Node import Node
 from utils.dialog import ask_max_allocations
 

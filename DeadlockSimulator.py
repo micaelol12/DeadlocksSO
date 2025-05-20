@@ -1,6 +1,6 @@
 import tkinter as tk
 from UI.UIController import UIController
-from service.GraphManager import Graphmanager
+from services.GraphManager import Graphmanager
 
 class DeadlockSimulator:
     def __init__(self, root:tk.Tk):

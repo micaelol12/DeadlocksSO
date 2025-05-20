@@ -1,7 +1,7 @@
 import pickle
 from tkinter import filedialog
 
-from service.GraphManager import Graphmanager
+from services.GraphManager import Graphmanager
 
 def storeData(graphManager:Graphmanager) -> bool:
     caminho_arquivo = filedialog.asksaveasfilename(
