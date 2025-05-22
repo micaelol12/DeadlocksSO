@@ -70,16 +70,14 @@ class UIController:
         self.graphManager = gm
 
         for processo in self.graphManager.processos.values():
-            self.node_renderer.draw(processo)
-            self.node_event_binder.bind(processo)
+            self.draw_and_bind_node(processo)
 
-        for processo in self.graphManager.recursos.values():
-            self.node_renderer.draw(processo)
-            self.node_event_binder.bind(processo)
+        for recurso in self.graphManager.recursos.values():
+           self.draw_and_bind_node(recurso)
 
         for edge in self.graphManager.edges.values():
-            self.edge_renderer.draw(edge)
-            self.edge_event_binder.bind(edge)
+            self.draw_and_bind_edge(edge)
+
 
     def set_mode(self, mode: ETipoNode):
         if self.mode == mode:
@@ -107,15 +105,18 @@ class UIController:
 
         if self.mode == ETipoNode.PROCESSO:
             node = self.graphManager.add_process(event.x, event.y)
-            self.node_renderer.draw(node)
-            self.node_event_binder.bind(node)
+            self.draw_and_bind_node(node)
+
 
         elif self.mode == ETipoNode.RECURSO:
             max_allocs = ask_max_allocations()
             if max_allocs is not None:
                 node = self.graphManager.add_resource(event.x, event.y, max_allocs)
-                self.node_renderer.draw(node)
-                self.node_event_binder.bind(node)
+                self.draw_and_bind_node(node)
+
+    def draw_and_bind_node(self, node: Node):
+        self.node_renderer.draw(node)
+        self.node_event_binder.bind(node)
 
     def end_drag(self, event, node: Node):
         if not self.dragManager.has_moved():
@@ -134,16 +135,15 @@ class UIController:
         for edge in copy:
             node.add_edge(edge)
             self.canvas.delete(edge.edgeElementId)
-            self.edge_renderer.draw(edge)
-            self.edge_event_binder.bind(edge)
+            self.draw_and_bind_edge(edge)
+
 
 
     def on_node_click(self,node: Node):
         if self.graphManager.selected_node:
             if self.graphManager.can_add_edge(node):
                 edge = self.graphManager.add_edge(node)
-                self.edge_renderer.draw(edge)
-                self.edge_event_binder.bind(edge)
+                self.draw_and_bind_edge(edge)
 
             self.unhighlight_node()
         else:
@@ -157,6 +157,10 @@ class UIController:
 
             self.mode = None
             self.update_button_states()
+
+    def draw_and_bind_edge(self,edge:Edge):
+        self.edge_renderer.draw(edge)
+        self.edge_event_binder.bind(edge)
 
     def delete_node_edges(self, node: Node):
         for edge in node.edges.copy():
