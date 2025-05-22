@@ -4,15 +4,16 @@ import tkinter as tk
 
 
 class NodeEventBinder:
-    def __init__(self, canvas: tk.Canvas,on_button_press_callback,on_button_motion_callback,on_button_release_callback):
+    def __init__(self, canvas: tk.Canvas,on_button_press_callback,on_button_motion_callback,on_button_release_callback,on_button_right_press_callback):
             self.canvas = canvas
             self.on_button_press_callback = on_button_press_callback
             self.on_button_motion_callback= on_button_motion_callback
             self.on_button_release_callback = on_button_release_callback
+            self.on_button_right_press_callback = on_button_right_press_callback
 
     def bind(self, node: Node):
         self.canvas.tag_bind(
-            node.id, "<Button-3>", lambda e, n=node: self.context_menu_manager.show(n, e)
+            node.id, "<Button-3>", lambda e, n=node: self.on_button_right_press_callback(n, e)
         )
         
         self.canvas.tag_bind(node.id, "<ButtonPress-1>", lambda e, n=node: self.on_button_press_callback(e, n))

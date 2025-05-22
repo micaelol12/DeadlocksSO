@@ -23,9 +23,9 @@ class UIController:
         self.node_renderer = NodeRenderer(canvas)
         self.edge_renderer = EdgeRenderer(canvas)
         self.dragManager = DragManager(canvas,1)
-        self.node_event_binder = NodeEventBinder(canvas,self.dragManager.start_drag,self.on_drag,self.end_drag)
-        self.edge_event_binder = EdgeEventBinder(canvas,self.delete_edge)
         self.context_menu_manager = ContextMenuManager(root,canvas,graphManager,self.edit_node,self.delete_node)
+        self.node_event_binder = NodeEventBinder(canvas,self.dragManager.start_drag,self.on_drag,self.end_drag,self.context_menu_manager.show)
+        self.edge_event_binder = EdgeEventBinder(canvas,self.delete_edge)
 
         self.setup_buttons(root)
         self.canvas.bind("<Button-1>", self.handle_canvas_click)
