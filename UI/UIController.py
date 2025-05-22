@@ -1,8 +1,10 @@
 import tkinter as tk
 from tkinter import messagebox
+from UI.EdgeEventBinder import EdgeEventBinder
 from UI.ContextMenuManager import ContextMenuManager
 from UI.DragManager import DragManager
 from UI.EdgeRenderer import EdgeRenderer
+from UI.NodeEventBinder import NodeEventBinder
 from UI.NodeRenderer import NodeRenderer
 from components.Edge import Edge
 from UI.Enums import  ETipoNode
@@ -14,14 +16,16 @@ from utils.dialog import ask_max_allocations
 
 class UIController:
     def __init__(self, root, canvas: tk.Canvas, graphManager: GM):
+        self.root = root
         self.canvas = canvas
         self.graphManager = graphManager
         self.mode: ETipoNode = False
         self.node_renderer = NodeRenderer(canvas)
         self.edge_renderer = EdgeRenderer(canvas)
-        self.context_menu_manager = ContextMenuManager(root,canvas,graphManager,self.edit_node,self.delete_node)
-        self.root = root
         self.dragManager = DragManager(canvas,1)
+        self.node_event_binder = NodeEventBinder(canvas,self.dragManager.start_drag,self.on_drag,self.end_drag)
+        self.edge_event_binder = EdgeEventBinder(canvas,self.delete_edge)
+        self.context_menu_manager = ContextMenuManager(root,canvas,graphManager,self.edit_node,self.delete_node)
 
         self.setup_buttons(root)
         self.canvas.bind("<Button-1>", self.handle_canvas_click)
@@ -67,15 +71,15 @@ class UIController:
 
         for processo in self.graphManager.processos.values():
             self.node_renderer.draw(processo)
-            self.bind_node_events(processo)
+            self.node_event_binder.bind(processo)
 
         for processo in self.graphManager.recursos.values():
             self.node_renderer.draw(processo)
-            self.bind_node_events(processo)
+            self.node_event_binder.bind(processo)
 
         for edge in self.graphManager.edges.values():
-            self.edge_renderer.draw(edge)(edge)
-            self.bind_edge_events(edge)
+            self.edge_renderer.draw(edge)
+            self.edge_event_binder.bind(edge)
 
     def set_mode(self, mode: ETipoNode):
         if self.mode == mode:
@@ -104,24 +108,14 @@ class UIController:
         if self.mode == ETipoNode.PROCESSO:
             node = self.graphManager.add_process(event.x, event.y)
             self.node_renderer.draw(node)
-            self.bind_node_events(node)
+            self.node_event_binder.bind(node)
 
         elif self.mode == ETipoNode.RECURSO:
             max_allocs = ask_max_allocations()
             if max_allocs is not None:
                 node = self.graphManager.add_resource(event.x, event.y, max_allocs)
                 self.node_renderer.draw(node)
-                self.bind_node_events(node)
-
-
-    def bind_node_events(self, node: Node):
-        self.canvas.tag_bind(
-            node.id, "<Button-3>", lambda e, n=node: self.context_menu_manager.show(n, e)
-        )
-        
-        self.canvas.tag_bind(node.id, "<ButtonPress-1>", lambda e, n=node: self.dragManager.start_drag(e, n))
-        self.canvas.tag_bind(node.id, "<B1-Motion>", lambda e, n=node: self.on_drag(e,n) )
-        self.canvas.tag_bind(node.id, "<ButtonRelease-1>", lambda e, n=node: self.end_drag(e,n))
+                self.node_event_binder.bind(node)
 
     def end_drag(self, event, node: Node):
         if not self.dragManager.has_moved():
@@ -141,21 +135,15 @@ class UIController:
             node.add_edge(edge)
             self.canvas.delete(edge.edgeElementId)
             self.edge_renderer.draw(edge)
-            self.bind_edge_events(edge)
+            self.edge_event_binder.bind(edge)
 
-
-
-    def bind_edge_events(self, edge: Edge):
-        self.canvas.tag_bind(
-            edge.id, "<Button-3>", lambda e, edge=edge: self.delete_edge(edge)
-        )
 
     def on_node_click(self,node: Node):
         if self.graphManager.selected_node:
             if self.graphManager.can_add_edge(node):
                 edge = self.graphManager.add_edge(node)
                 self.edge_renderer.draw(edge)
-                self.bind_edge_events(edge)
+                self.edge_event_binder.bind(edge)
 
             self.unhighlight_node()
         else:
