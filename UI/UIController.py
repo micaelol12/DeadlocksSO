@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import messagebox
 from UI.DragManager import DragManager
+from UI.EdgeRenderer import EdgeRenderer
+from UI.NodeRenderer import NodeRenderer
 from components.Edge import Edge
 from UI.Enums import ETipoEdge, ETipoNode
 from services.File import loadData, storeData
@@ -14,6 +16,8 @@ class UIController:
         self.canvas = canvas
         self.graphManager = graphManager
         self.mode: ETipoNode = False
+        self.node_renderer = NodeRenderer(canvas)
+        self.edge_renderer = EdgeRenderer(canvas)
         self.root = root
         self.dragManager = DragManager(canvas,1)
 
@@ -60,15 +64,15 @@ class UIController:
         self.graphManager = gm
 
         for processo in self.graphManager.processos.values():
-            self.print_node(processo)
+            self.node_renderer.draw(processo)
             self.bind_node_events(processo)
 
         for processo in self.graphManager.recursos.values():
-            self.print_node(processo)
+            self.node_renderer.draw(processo)
             self.bind_node_events(processo)
 
         for edge in self.graphManager.edges.values():
-            self.print_edge(edge)
+            self.edge_renderer.draw(edge)(edge)
             self.bind_edge_events(edge)
 
     def set_mode(self, mode: ETipoNode):
@@ -97,38 +101,16 @@ class UIController:
 
         if self.mode == ETipoNode.PROCESSO:
             node = self.graphManager.add_process(event.x, event.y)
-            self.print_node(node)
+            self.node_renderer.draw(node)
             self.bind_node_events(node)
 
         elif self.mode == ETipoNode.RECURSO:
             max_allocs = ask_max_allocations()
             if max_allocs is not None:
                 node = self.graphManager.add_resource(event.x, event.y, max_allocs)
-                self.print_node(node)
+                self.node_renderer.draw(node)
                 self.bind_node_events(node)
 
-    def print_node(self, node: Node):
-        x, y = node.position
-        node.NodeId = self.canvas.create_oval(
-            x - node.radius,
-            y - node.radius,
-            x + node.radius,
-            y + node.radius,
-            fill=node.color,
-            tags=(node.id),
-        )
-        node.TextId = self.canvas.create_text(
-            x, y, text=node.text, fill="white", tags=(node.id)
-        )
-
-        if node.max_alocacoes:
-            node.MaxAlocacoesId = self.canvas.create_text(
-                x,
-                y + node.radius / 2,
-                text=str(node.max_alocacoes),
-                fill="gray",
-                tags=(node.id),
-            )
 
     def bind_node_events(self, node: Node):
         self.canvas.tag_bind(
@@ -156,28 +138,10 @@ class UIController:
         for edge in copy:
             node.add_edge(edge)
             self.canvas.delete(edge.edgeElementId)
-            self.print_edge(edge)
+            self.edge_renderer.draw(edge)
             self.bind_edge_events(edge)
 
-    def print_edge(self, edge: Edge):
-        color = "red" if edge.tipo == ETipoEdge.ALOCACAO else "green"
-        ctrl_x, ctrl_y, x1, y1, x2, y2 = edge.get_bezier_arrow()
 
-        element = self.canvas.create_line(
-            x1,
-            y1,
-            ctrl_x,
-            ctrl_y,
-            x2,
-            y2,
-            smooth=True,
-            arrow=tk.LAST,
-            fill=color,
-            width=2,
-            tags=(edge.id),
-        )
-
-        edge.edgeElementId = element
 
     def bind_edge_events(self, edge: Edge):
         self.canvas.tag_bind(
@@ -188,7 +152,7 @@ class UIController:
         if self.graphManager.selected_node:
             if self.graphManager.can_add_edge(node):
                 edge = self.graphManager.add_edge(node)
-                self.print_edge(edge)
+                self.edge_renderer.draw(edge)
                 self.bind_edge_events(edge)
 
             self.unhighlight_node()
