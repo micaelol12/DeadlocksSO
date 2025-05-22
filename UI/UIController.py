@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
+from UI.DeadlockVisualizer import DeadlockVisualizer
 from UI.EdgeEventBinder import EdgeEventBinder
 from UI.ContextMenuManager import ContextMenuManager
 from UI.DragManager import DragManager
@@ -20,12 +21,13 @@ class UIController:
         self.canvas = canvas
         self.graphManager = graphManager
         self.mode: ETipoNode = False
-        self.node_renderer = NodeRenderer(canvas)
-        self.edge_renderer = EdgeRenderer(canvas)
-        self.dragManager = DragManager(canvas,1)
-        self.context_menu_manager = ContextMenuManager(root,canvas,graphManager,self.edit_node,self.delete_node)
-        self.node_event_binder = NodeEventBinder(canvas,self.dragManager.start_drag,self.on_drag,self.end_drag,self.context_menu_manager.show)
-        self.edge_event_binder = EdgeEventBinder(canvas,self.delete_edge)
+        self.node_renderer = NodeRenderer(self.canvas)
+        self.edge_renderer = EdgeRenderer(self.canvas)
+        self.dragManager = DragManager(self.canvas,1)
+        self.context_menu_manager = ContextMenuManager(root,canvas,self.graphManager,self.edit_node,self.delete_node)
+        self.node_event_binder = NodeEventBinder(self.canvas,self.dragManager.start_drag,self.on_drag,self.end_drag,self.context_menu_manager.show)
+        self.edge_event_binder = EdgeEventBinder(self.canvas,self.delete_edge)
+        self.deadlock_visualizer = DeadlockVisualizer(self.canvas,self.graphManager,self.delete_node_edges)
 
         self.setup_buttons(root)
         self.canvas.bind("<Button-1>", self.handle_canvas_click)
@@ -42,7 +44,7 @@ class UIController:
         )
         self.btn_process.pack(side=tk.LEFT, padx=5)
         self.btn_resource.pack(side=tk.LEFT, padx=5)
-        tk.Button(frame, text="Detectar Deadlock", command=self.detect_deadlock).pack(
+        tk.Button(frame, text="Detectar Deadlock", command=self.deadlock_visualizer.detect_deadlock).pack(
             side=tk.LEFT, padx=5
         )
         tk.Button(frame, text="Limpar", command=self.clear_canvas).pack(
@@ -63,11 +65,14 @@ class UIController:
         self.clear_canvas()
 
         gm = loadData()
+
         if not gm:
             messagebox.showinfo("Erro ao Carregar", "Não foi possível carregar o grafo")
             return
 
         self.graphManager = gm
+        self.context_menu_manager.graphManager  = gm
+        self.deadlock_visualizer.graphManager = gm
 
         for processo in self.graphManager.processos.values():
             self.draw_and_bind_node(processo)
@@ -193,42 +198,6 @@ class UIController:
     def highlight_node(self, node: Node):
         self.canvas.itemconfig(node.NodeId, outline="red", width=2)
         self.graphManager.select_node(node)
-
-    def detect_deadlock(self):
-        deadlocked, liberaveis = (
-            self.graphManager.detect_deadlock_with_terminable_edges()
-        )
-        self.remove_edges_step_by_step(liberaveis, deadlocked)
-
-    def remove_edges_step_by_step(self, liberaveis, deadlocked, index=0):
-        if index < len(liberaveis):
-            node_id = liberaveis[index]
-            node = self.graphManager.processos.get(node_id)
-            if node:
-                self.delete_node_edges(node)
-            # Chama recursivamente o próximo passo após 500ms
-            self.canvas.after(
-                2000,
-                lambda: self.remove_edges_step_by_step(
-                    liberaveis, deadlocked, index + 1
-                ),
-            )
-        else:
-            # Após terminar a remoção, mostra a mensagem
-            if deadlocked:
-                messagebox.showwarning(
-                    "Deadlock detectado",
-                    f"Processos em deadlock: {', '.join(deadlocked)}",
-                )
-                self.highlight_deadlocked_processes(deadlocked)
-            else:
-                messagebox.showinfo("Sem Deadlock", "Nenhum deadlock foi detectado.")
-
-    def highlight_deadlocked_processes(self, deadlocked_ids: list[str]):
-        for pid in deadlocked_ids:
-            processo = self.graphManager.processos.get(pid)
-            if processo:
-                self.canvas.itemconfig(processo.NodeId, fill="red")
 
     def edit_node(self, node: Node):
         max = ask_max_allocations(str(node.max_alocacoes))
