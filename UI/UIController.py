@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
+from UI.DragManager import DragManager
 from components.Edge import Edge
 from UI.Enums import ETipoEdge, ETipoNode
 from services.File import loadData, storeData
@@ -14,6 +15,7 @@ class UIController:
         self.graphManager = graphManager
         self.mode: ETipoNode = False
         self.root = root
+        self.dragManager = DragManager(canvas)
 
         self.setup_buttons(root)
         self.canvas.bind("<Button-1>", self.handle_canvas_click)
@@ -130,11 +132,28 @@ class UIController:
 
     def bind_node_events(self, node: Node):
         self.canvas.tag_bind(
-            node.id, "<Button-1>", lambda e, n=node: self.on_node_click(n)
-        )
-        self.canvas.tag_bind(
             node.id, "<Button-3>", lambda e, n=node: self.abrir_menu_contexto(n, e)
         )
+        
+        self.canvas.tag_bind(node.id, "<ButtonPress-1>", lambda e, n=node: self.dragManager.start_drag(e, n))
+        self.canvas.tag_bind(node.id, "<B1-Motion>", lambda e, n=node: self.on_drag(e,n) )
+        self.canvas.tag_bind(node.id, "<ButtonRelease-1>", lambda e, n=node: self.end_drag(e,n))
+
+    def end_drag(self, event, node: Node):
+        if not self.dragManager.has_moved():
+            self.on_node_click(node) 
+
+        self.dragManager.end_drag(event, node)
+
+    def on_drag(self, event, node: Node):
+        self.dragManager.do_drag(event, node)
+        self.redraw_edges_for_node(node)
+
+    def redraw_edges_for_node(self, node: Node):
+        for edge in node.edges:
+            self.canvas.delete(edge.edgeElementId)
+            self.print_edge(edge)
+            self.bind_edge_events(edge)
 
     def print_edge(self, edge: Edge):
         color = "red" if edge.tipo == ETipoEdge.ALOCACAO else "green"
@@ -153,6 +172,7 @@ class UIController:
             width=2,
             tags=(edge.id),
         )
+
         edge.edgeElementId = element
 
     def bind_edge_events(self, edge: Edge):
@@ -160,7 +180,7 @@ class UIController:
             edge.id, "<Button-3>", lambda e, edge=edge: self.delete_edge(edge)
         )
 
-    def on_node_click(self, node: Node):
+    def on_node_click(self,node: Node):
         if self.graphManager.selected_node:
             if self.graphManager.can_add_edge(node):
                 edge = self.graphManager.add_edge(node)
