@@ -4,9 +4,11 @@ import tkinter as tk
 class DragManager:
     drag_data = {"x": 0, "y": 0, "node": None,"moved": False}
     canvas = None
+    move_offset = 1
 
-    def __init__(self,canvas:tk.Canvas):
+    def __init__(self,canvas:tk.Canvas,move_offset:int):
         self.canvas = canvas
+        self.move_offset = move_offset
 
     def start_drag(self, event, node: Node):
         self.drag_data["node"] = node
@@ -18,9 +20,10 @@ class DragManager:
         dx = event.x - self.drag_data["x"]
         dy = event.y - self.drag_data["y"]
 
-        if abs(dx) > 1 or abs(dy) > 1:
-            self.drag_data["moved"] = True
-
+        if abs(dx) < self.move_offset and abs(dy) < self.move_offset:
+            return
+        
+        self.drag_data["moved"] = True
         self.canvas.move(node.NodeId, dx, dy)
         self.canvas.move(node.TextId, dx, dy)
 

@@ -29,8 +29,11 @@ class Node:
         if edge and edge.tipo == ETipoEdge.REQUISACAO:
             return True
 
-        alocados = [e for e in self.edges if e.tipo == ETipoEdge.ALOCACAO]
-        return self.tipoNode == ETipoNode.PROCESSO or len(alocados) < self.max_alocacoes
+        return self.tipoNode == ETipoNode.PROCESSO or  self.get_alocados_size() < self.max_alocacoes
+    
+    def get_alocados_size(self) -> int:
+       alocados = [e for e in self.edges if e.tipo == ETipoEdge.ALOCACAO]
+       return len(alocados)
 
     def add_edge(self, edge: Edge) -> bool:
         if self.can_add_edge(edge):
@@ -40,9 +43,8 @@ class Node:
         return False
 
     def delete_all_edges(self):
-        for edge in self.edges[:]:
-            edge.origem.delete_edge(edge)
-            edge.destino.delete_edge(edge)
+        for edge in self.edges.copy():
+           self.edges.remove(edge)
 
     def delete_edge(self, edge: Edge):
         self.edges.remove(edge)

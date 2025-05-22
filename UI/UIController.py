@@ -15,7 +15,7 @@ class UIController:
         self.graphManager = graphManager
         self.mode: ETipoNode = False
         self.root = root
-        self.dragManager = DragManager(canvas)
+        self.dragManager = DragManager(canvas,1)
 
         self.setup_buttons(root)
         self.canvas.bind("<Button-1>", self.handle_canvas_click)
@@ -150,7 +150,11 @@ class UIController:
         self.redraw_edges_for_node(node)
 
     def redraw_edges_for_node(self, node: Node):
-        for edge in node.edges:
+        copy = node.edges.copy()
+        node.delete_all_edges()
+
+        for edge in copy:
+            node.add_edge(edge)
             self.canvas.delete(edge.edgeElementId)
             self.print_edge(edge)
             self.bind_edge_events(edge)
@@ -270,11 +274,13 @@ class UIController:
 
     def edit_node(self, node: Node):
         max = ask_max_allocations(str(node.max_alocacoes))
-        if max < node.max_alocacoes:
+
+        if max < node.get_alocados_size():
             messagebox.showwarning(
                 "Não foi possível editar",
                 "Você deve removar as alocações para diminuir o número máximo",
             )
+
         else:
             node.max_alocacoes = max
             self.canvas.itemconfig(node.MaxAlocacoesId, text=str(max))
