@@ -1,10 +1,11 @@
 import tkinter as tk
 from tkinter import messagebox
+from UI.ContextMenuManager import ContextMenuManager
 from UI.DragManager import DragManager
 from UI.EdgeRenderer import EdgeRenderer
 from UI.NodeRenderer import NodeRenderer
 from components.Edge import Edge
-from UI.Enums import ETipoEdge, ETipoNode
+from UI.Enums import  ETipoNode
 from services.File import loadData, storeData
 from services.GraphManager import Graphmanager as GM
 from components.Node import Node
@@ -18,6 +19,7 @@ class UIController:
         self.mode: ETipoNode = False
         self.node_renderer = NodeRenderer(canvas)
         self.edge_renderer = EdgeRenderer(canvas)
+        self.context_menu_manager = ContextMenuManager(root,canvas,graphManager,self.edit_node,self.delete_node)
         self.root = root
         self.dragManager = DragManager(canvas,1)
 
@@ -114,7 +116,7 @@ class UIController:
 
     def bind_node_events(self, node: Node):
         self.canvas.tag_bind(
-            node.id, "<Button-3>", lambda e, n=node: self.abrir_menu_contexto(n, e)
+            node.id, "<Button-3>", lambda e, n=node: self.context_menu_manager.show(n, e)
         )
         
         self.canvas.tag_bind(node.id, "<ButtonPress-1>", lambda e, n=node: self.dragManager.start_drag(e, n))
@@ -248,14 +250,3 @@ class UIController:
         else:
             node.max_alocacoes = max
             self.canvas.itemconfig(node.MaxAlocacoesId, text=str(max))
-
-    def abrir_menu_contexto(self, node: Node, event):
-        if node.tipoNode == ETipoNode.RECURSO:
-            menu = tk.Menu(self.root, tearoff=0)
-            menu.add_command(label="Remover", command=lambda: self.delete_node(node))
-            menu.add_command(
-                label="Editar Recurso", command=lambda: self.edit_node(node)
-            )
-            menu.post(event.x_root, event.y_root)
-        else:
-            self.delete_node(node)
