@@ -55,9 +55,7 @@ class UIController:
             messagebox.showinfo("Erro ao Carregar", "Não foi possível carregar o grafo")
             return
 
-        self.graphManager = gm
-        self.context_menu_manager.graphManager  = gm
-        self.deadlock_visualizer.graphManager = gm
+        self.set_graph_manager(gm)
 
         for processo in self.graphManager.processos.values():
             self.draw_and_bind_node(processo)
@@ -67,6 +65,11 @@ class UIController:
 
         for edge in self.graphManager.edges.values():
             self.draw_and_bind_edge(edge)
+
+    def set_graph_manager(self, new_gm: GM):
+        self.graphManager = new_gm
+        self.context_menu_manager.graphManager = new_gm
+        self.deadlock_visualizer.graphManager = new_gm
 
 
     def set_mode(self, mode: ETipoNode):
