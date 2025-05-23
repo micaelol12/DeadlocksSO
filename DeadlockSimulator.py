@@ -8,7 +8,7 @@ class DeadlockSimulator:
         self.root.title("Simulador de Deadlock")
 
         self.canvas = tk.Canvas(root, bg="white", width=800, height=600)
-        self.canvas.pack()
+        self.canvas.pack(fill=tk.BOTH, expand=True)
 
         self.graphManager = GraphManager()
         self.ui = UIController(root, self.canvas, self.graphManager)
