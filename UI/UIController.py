@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
+from UI.Menu import Menu
 from UI.Renderers import EdgeRenderer,NodeRenderer
 from UI.Binders import NodeEventBinder,EdgeEventBinder
 from components import Edge,Node
@@ -26,24 +27,25 @@ class UIController:
         self.node_event_binder = NodeEventBinder(self.canvas,self.dragManager.start_drag,self.on_drag,self.end_drag,self.context_menu_manager.show)
         self.edge_event_binder = EdgeEventBinder(self.canvas,self.delete_edge)
         self.deadlock_visualizer = DeadlockVisualizer(self.canvas,self.graphManager,self.delete_node_edges)
+
+        self.menu = Menu(root,self.save,self.load)
         self.control_panel = ControlPanel(
             root,
             self.toggle_process_mode,
             self.toggle_resource_mode,
             self.deadlock_visualizer.detect_deadlock,
             self.clear_canvas,
-            self.salvar_data,
-            self.carregar_data
         )
 
+        self.menu.create_menu_bar()
         self.canvas.bind("<Button-1>", self.handle_canvas_click)
 
 
-    def salvar_data(self):
+    def save(self):
         if not File.storeData(self.graphManager):
             messagebox.showinfo("Erro ao Salvar", "Não foi possível salvar o grafo")
 
-    def carregar_data(self):
+    def load(self):
         self.clear_canvas()
 
         gm = File.loadData()
