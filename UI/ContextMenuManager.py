@@ -1,4 +1,4 @@
-from UI.Enums import ETipoNode
+from utils.Enums import ETipoNode
 from components.Node import Node
 import tkinter as tk
 

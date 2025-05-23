@@ -1,4 +1,4 @@
-from UI.Enums import ETipoEdge, ETipoNode
+from utils.Enums import ETipoEdge, ETipoNode
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:

@@ -1,4 +1,4 @@
-from UI.Enums import ETipoNode, ETipoEdge
+from utils.Enums import ETipoNode, ETipoEdge
 from components.Edge import Edge
 
 
