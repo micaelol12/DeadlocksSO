@@ -3,8 +3,7 @@ from tkinter import messagebox
 from UI.Renderers import EdgeRenderer,NodeRenderer
 from UI.Binders import NodeEventBinder,EdgeEventBinder
 from components import Edge,Node
-from services import GraphManager as GM
-from services.File import loadData, storeData
+from services import GraphManager,File
 
 from UI.ControlPanel import ControlPanel
 from UI.DeadlockVisualizer import DeadlockVisualizer
@@ -15,7 +14,7 @@ from utils.dialog import ask_max_allocations
 
 
 class UIController:
-    def __init__(self, root, canvas: tk.Canvas, graphManager: GM):
+    def __init__(self, root, canvas: tk.Canvas, graphManager: GraphManager):
         self.root = root
         self.canvas = canvas
         self.graphManager = graphManager
@@ -41,13 +40,13 @@ class UIController:
 
 
     def salvar_data(self):
-        if not storeData(self.graphManager):
+        if not File.storeData(self.graphManager):
             messagebox.showinfo("Erro ao Salvar", "Não foi possível salvar o grafo")
 
     def carregar_data(self):
         self.clear_canvas()
 
-        gm = loadData()
+        gm = File.loadData()
 
         if not gm:
             messagebox.showinfo("Erro ao Carregar", "Não foi possível carregar o grafo")
@@ -64,7 +63,7 @@ class UIController:
         for edge in self.graphManager.edges.values():
             self.draw_and_bind_edge(edge)
 
-    def set_graph_manager(self, new_gm: GM):
+    def set_graph_manager(self, new_gm: GraphManager):
         self.graphManager = new_gm
         self.context_menu_manager.graphManager = new_gm
         self.deadlock_visualizer.graphManager = new_gm
