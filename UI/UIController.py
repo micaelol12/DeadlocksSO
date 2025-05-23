@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
+from UI.ControlPanel import ControlPanel
 from UI.DeadlockVisualizer import DeadlockVisualizer
 from UI.EdgeEventBinder import EdgeEventBinder
 from UI.ContextMenuManager import ContextMenuManager
@@ -28,34 +29,18 @@ class UIController:
         self.node_event_binder = NodeEventBinder(self.canvas,self.dragManager.start_drag,self.on_drag,self.end_drag,self.context_menu_manager.show)
         self.edge_event_binder = EdgeEventBinder(self.canvas,self.delete_edge)
         self.deadlock_visualizer = DeadlockVisualizer(self.canvas,self.graphManager,self.delete_node_edges)
+        self.control_panel = ControlPanel(
+            root,
+            self.toggle_process_mode,
+            self.toggle_resource_mode,
+            self.deadlock_visualizer.detect_deadlock,
+            self.clear_canvas,
+            self.salvar_data,
+            self.carregar_data
+        )
 
-        self.setup_buttons(root)
         self.canvas.bind("<Button-1>", self.handle_canvas_click)
 
-    def setup_buttons(self, root):
-        frame = tk.LabelFrame(root, text="Controles", padx=5, pady=5)
-        frame.pack()
-
-        self.btn_process = tk.Button(
-            frame, text="Novo Processo", command=self.toggle_process_mode
-        )
-        self.btn_resource = tk.Button(
-            frame, text="Novo Recurso", command=self.toggle_resource_mode
-        )
-        self.btn_process.pack(side=tk.LEFT, padx=5)
-        self.btn_resource.pack(side=tk.LEFT, padx=5)
-        tk.Button(frame, text="Detectar Deadlock", command=self.deadlock_visualizer.detect_deadlock).pack(
-            side=tk.LEFT, padx=5
-        )
-        tk.Button(frame, text="Limpar", command=self.clear_canvas).pack(
-            side=tk.LEFT, padx=5
-        )
-        tk.Button(frame, text="Salvar", command=self.salvar_data).pack(
-            side=tk.LEFT, padx=5
-        )
-        tk.Button(frame, text="Carregar", command=self.carregar_data).pack(
-            side=tk.LEFT, padx=5
-        )
 
     def salvar_data(self):
         if not storeData(self.graphManager):
@@ -97,12 +82,8 @@ class UIController:
         self.set_mode(ETipoNode.RECURSO)
 
     def update_button_states(self):
-        self.btn_process.config(
-            bg="red" if self.mode == ETipoNode.PROCESSO else "SystemButtonFace"
-        )
-        self.btn_resource.config(
-            bg="red" if self.mode == ETipoNode.RECURSO else "SystemButtonFace"
-        )
+      self.control_panel.highlight_process(self.mode == ETipoNode.PROCESSO)
+      self.control_panel.highlight_resource(self.mode == ETipoNode.RECURSO)
 
     def handle_canvas_click(self, event):
         if self.graphManager.has_node_at_position(event.x, event.y):
@@ -141,8 +122,6 @@ class UIController:
             node.add_edge(edge)
             self.canvas.delete(edge.edgeElementId)
             self.draw_and_bind_edge(edge)
-
-
 
     def on_node_click(self,node: Node):
         if self.graphManager.selected_node:
