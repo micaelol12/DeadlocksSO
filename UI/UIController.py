@@ -37,39 +37,45 @@ class UIController:
             self.clear_canvas,
         )
 
+        self.bind_keyboard_events()
         self.menu.create_menu_bar()
         self.canvas.bind("<Button-1>", self.handle_canvas_click)
 
 
+    def bind_keyboard_events(self):
+        self.root.bind_all("<Control-s>", lambda e: self.save())
+        self.root.bind_all("<Control-o>", lambda e: self.load())
+
     def save(self):
         if not File.storeData(self.graphManager):
-            messagebox.showinfo("Erro ao Salvar", "Não foi possível salvar o grafo")
+            messagebox.showinfo("Erro ao Salvar", "Não foi possível salvar o simulador")
 
     def load(self):
-        self.clear_canvas()
+        try:
+            gm = File.loadData()
 
-        gm = File.loadData()
+            if not gm:
+                return
 
-        if not gm:
-            messagebox.showinfo("Erro ao Carregar", "Não foi possível carregar o grafo")
-            return
+            self.clear_canvas()
 
-        self.set_graph_manager(gm)
+            self.set_graph_manager(gm)
 
-        for processo in self.graphManager.processos.values():
-            self.draw_and_bind_node(processo)
+            for processo in self.graphManager.processos.values():
+                self.draw_and_bind_node(processo)
 
-        for recurso in self.graphManager.recursos.values():
-           self.draw_and_bind_node(recurso)
+            for recurso in self.graphManager.recursos.values():
+                self.draw_and_bind_node(recurso)
 
-        for edge in self.graphManager.edges.values():
-            self.draw_and_bind_edge(edge)
+            for edge in self.graphManager.edges.values():
+                self.draw_and_bind_edge(edge)
+        except:
+             messagebox.showinfo("Erro ao Carregar", "Não foi possível carregar o simulador")
 
     def set_graph_manager(self, new_gm: GraphManager):
         self.graphManager = new_gm
         self.context_menu_manager.graphManager = new_gm
         self.deadlock_visualizer.graphManager = new_gm
-
 
     def set_mode(self, mode: ETipoNode):
         if self.mode == mode:

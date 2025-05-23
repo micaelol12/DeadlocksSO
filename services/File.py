@@ -30,9 +30,7 @@ def loadData() -> GraphManager:
     if not caminho_arquivo:
         return None
 
-    try:
-        with open(caminho_arquivo, "rb") as dbfile:
-            graphManager = pickle.load(dbfile)
-        return graphManager
-    except Exception as e:
-        return None
+    with open(caminho_arquivo, "rb") as dbfile:
+        graphManager = pickle.load(dbfile)
+    return graphManager
+
