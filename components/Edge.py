@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from components.Node import Node
 
-
 class Edge:
     def __init__(self, id: str, origem: "Node", destino: "Node"):
         self.id = id

@@ -1,6 +1,5 @@
 from utils.Enums import ETipoNode, ETipoEdge
-from components.Edge import Edge
-
+from components import Edge
 
 class Node:
     def __init__(

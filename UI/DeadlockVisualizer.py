@@ -1,20 +1,20 @@
 from tkinter import messagebox,Canvas
-from services.GraphManager import Graphmanager
+from services import GraphManager
 
 class DeadlockVisualizer:
-    def __init__(self,canvas: Canvas, graphManager: Graphmanager,on_node_fine_callback):
+    def __init__(self,canvas: Canvas, graph_manager: GraphManager,on_node_fine_callback):
         self.canvas = canvas
-        self.graphManager = graphManager
+        self.graph_manager = graph_manager
         self.on_node_fine_callback = on_node_fine_callback
 
     def detect_deadlock(self):
-        deadlocked, liberaveis = self.graphManager.detect_deadlock_with_terminable_edges()
+        deadlocked, liberaveis = self.graph_manager.detect_deadlock_with_terminable_edges()
         self.remove_edges_step_by_step(liberaveis, deadlocked)
 
     def remove_edges_step_by_step(self, liberaveis, deadlocked, index=0):
         if index < len(liberaveis):
             node_id = liberaveis[index]
-            node = self.graphManager.processos.get(node_id)
+            node = self.graph_manager.processos.get(node_id)
 
             if node:
                 self.on_node_fine_callback(node)
@@ -39,6 +39,6 @@ class DeadlockVisualizer:
 
     def highlight_deadlocked_processes(self, deadlocked_ids: list[str]):
         for pid in deadlocked_ids:
-            processo = self.graphManager.processos.get(pid)
+            processo = self.graph_manager.processos.get(pid)
             if processo:
                 self.canvas.itemconfig(processo.NodeId, fill="red")

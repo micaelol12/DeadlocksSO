@@ -1,4 +1,4 @@
-from components.Edge import Edge
+from components import Edge
 import tkinter as tk
 
 

@@ -1,7 +1,6 @@
 import tkinter as tk
 from UI.UIController import UIController
-from services.GraphManager import Graphmanager
-
+from services import GraphManager
 
 class DeadlockSimulator:
     def __init__(self, root: tk.Tk):
@@ -11,5 +10,5 @@ class DeadlockSimulator:
         self.canvas = tk.Canvas(root, bg="white", width=800, height=600)
         self.canvas.pack()
 
-        self.graphManager = Graphmanager()
+        self.graphManager = GraphManager()
         self.ui = UIController(root, self.canvas, self.graphManager)

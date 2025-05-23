@@ -1,5 +1,5 @@
 from utils.Enums import ETipoNode
-from components.Node import Node
+from components import Node
 import tkinter as tk
 
 

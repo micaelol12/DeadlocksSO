@@ -1,10 +1,8 @@
 import pickle
 from tkinter import filedialog
+from services import GraphManager
 
-from services.GraphManager import Graphmanager
-
-
-def storeData(graphManager: Graphmanager) -> bool:
+def storeData(graphManager: GraphManager) -> bool:
     caminho_arquivo = filedialog.asksaveasfilename(
         title="Salvar arquivo como...",
         defaultextension=".pkl",
@@ -22,7 +20,7 @@ def storeData(graphManager: Graphmanager) -> bool:
         return False
 
 
-def loadData() -> Graphmanager:
+def loadData() -> GraphManager:
     caminho_arquivo = filedialog.askopenfilename(
         title="Abrir arquivo",
         defaultextension=".pkl",

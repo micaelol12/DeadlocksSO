@@ -1,5 +1,4 @@
-from UI.Managers.DragManager import DragManager
-from components.Node import Node
+from components import Node
 import tkinter as tk
 
 

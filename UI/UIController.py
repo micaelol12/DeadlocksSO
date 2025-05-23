@@ -1,18 +1,16 @@
 import tkinter as tk
 from tkinter import messagebox
+from UI.Renderers import EdgeRenderer,NodeRenderer
+from UI.Binders import NodeEventBinder,EdgeEventBinder
+from components import Edge,Node
+from services import GraphManager as GM
+from services.File import loadData, storeData
+
 from UI.ControlPanel import ControlPanel
 from UI.DeadlockVisualizer import DeadlockVisualizer
-from UI.Binders.EdgeEventBinder import EdgeEventBinder
 from UI.ContextMenuManager import ContextMenuManager
 from UI.Managers.DragManager import DragManager
-from UI.Renderers.EdgeRenderer import EdgeRenderer
-from UI.Binders.NodeEventBinder import NodeEventBinder
-from UI.Renderers.NodeRenderer import NodeRenderer
-from components.Edge import Edge
 from utils.Enums import  ETipoNode
-from services.File import loadData, storeData
-from services.GraphManager import Graphmanager as GM
-from components.Node import Node
 from utils.dialog import ask_max_allocations
 
 

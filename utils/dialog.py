@@ -1,5 +1,5 @@
 from tkinter import simpledialog, messagebox
-from utils.utils import validate_integer_input
+from utils.validatiors import validate_integer_input
 
 
 def ask_max_allocations(initialvalue=None) -> int:

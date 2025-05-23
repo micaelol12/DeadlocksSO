@@ -1,9 +1,8 @@
 from utils.Enums import ETipoEdge, ETipoNode
-from components.Node import Node
-from components.Edge import Edge
+from components import Node,Edge
 
 
-class Graphmanager:
+class GraphManager:
     def __init__(self):
         self.processos: dict[str, Node] = {}
         self.recursos: dict[str, Node] = {}

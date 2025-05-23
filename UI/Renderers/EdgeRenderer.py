@@ -1,6 +1,5 @@
 from utils.Enums import ETipoEdge
-from components.Edge import Edge
-from components.Node import Node
+from components import Edge,Node
 import tkinter as tk
 
 
