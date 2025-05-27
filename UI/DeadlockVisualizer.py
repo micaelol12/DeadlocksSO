@@ -6,6 +6,7 @@ class DeadlockVisualizer:
         self.canvas = canvas
         self.graph_manager = graph_manager
         self.on_node_fine_callback = on_node_fine_callback
+        self.remove_time = 2000 
 
     def detect_deadlock(self):
         deadlocked, liberaveis = self.graph_manager.detect_deadlock_with_terminable_edges()
@@ -18,10 +19,9 @@ class DeadlockVisualizer:
 
             if node:
                 self.on_node_fine_callback(node)
-            # Chama recursivamente o próximo passo após 500ms
 
             self.canvas.after(
-                2000,
+                self.remove_time,
                 lambda: self.remove_edges_step_by_step(
                     liberaveis, deadlocked, index + 1
                 ),
