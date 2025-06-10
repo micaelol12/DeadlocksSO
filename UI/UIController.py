@@ -75,7 +75,7 @@ class UIController:
     def set_graph_manager(self, new_gm: GraphManager):
         self.graphManager = new_gm
         self.context_menu_manager.graphManager = new_gm
-        self.deadlock_visualizer.graphManager = new_gm
+        self.deadlock_visualizer.graph_manager = new_gm
 
     def set_mode(self, mode: ETipoNode):
         if self.mode == mode:
@@ -100,7 +100,6 @@ class UIController:
         if self.mode == ETipoNode.PROCESSO:
             node = self.graphManager.add_process(event.x, event.y)
             self.draw_and_bind_node(node)
-
 
         elif self.mode == ETipoNode.RECURSO:
             max_allocs = ask_max_allocations()
